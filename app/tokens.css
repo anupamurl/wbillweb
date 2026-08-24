@@ -1,0 +1,59 @@
+/* Generated from apps/web/tools/tokens.json by apps/web/tools/generate-tokens.mjs. Do not edit. */
+
+:root {
+  --wbill-primary: #0F62FE;
+  --wbill-primary-container: #D0E2FF;
+  --wbill-secondary: #3D3D3D;
+  --wbill-background: #F7F8FA;
+  --wbill-surface: #FFFFFF;
+  --wbill-surface-variant: #EDF0F3;
+  --wbill-text-primary: #1A1A1A;
+  --wbill-text-secondary: #5B6470;
+  --wbill-text-disabled: #A6ADB4;
+  --wbill-border: #DDE1E6;
+  --wbill-success: #198038;
+  --wbill-warning: #B28600;
+  --wbill-error: #DA1E28;
+  --wbill-info: #0043CE;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wbill-primary: #6EA8FF;
+    --wbill-primary-container: #13294B;
+    --wbill-secondary: #C6C6C6;
+    --wbill-background: #121417;
+    --wbill-surface: #1C1F23;
+    --wbill-surface-variant: #262A2F;
+    --wbill-text-primary: #F2F4F8;
+    --wbill-text-secondary: #A8B0BA;
+    --wbill-text-disabled: #5B6470;
+    --wbill-border: #32363C;
+    --wbill-success: #42BE65;
+    --wbill-warning: #F1C21B;
+    --wbill-error: #FF8389;
+    --wbill-info: #78A9FF;
+  }
+}
+
+/* `inline` keeps the var() reference in the generated utility, so every
+   colour utility follows prefers-color-scheme with no dark: prefixes. */
+@theme inline {
+  --color-primary: var(--wbill-primary);
+  --color-primary-container: var(--wbill-primary-container);
+  --color-secondary: var(--wbill-secondary);
+  --color-background: var(--wbill-background);
+  --color-surface: var(--wbill-surface);
+  --color-surface-variant: var(--wbill-surface-variant);
+  --color-text-primary: var(--wbill-text-primary);
+  --color-text-secondary: var(--wbill-text-secondary);
+  --color-text-disabled: var(--wbill-text-disabled);
+  --color-border: var(--wbill-border);
+  --color-success: var(--wbill-success);
+  --color-warning: var(--wbill-warning);
+  --color-error: var(--wbill-error);
+  --color-info: var(--wbill-info);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
