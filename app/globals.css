@@ -5,6 +5,254 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion primitives
+ *
+ * Everything here is CSS-only. Entrance animations run on load; scroll
+ * reveals use a view() timeline behind @supports, so browsers without
+ * scroll-driven animations render the same page with no motion and
+ * never hide content. Nothing on this site needs JavaScript to be
+ * readable — the waitlist form stays the only client component.
+ * ------------------------------------------------------------------ */
+
+@keyframes wb-fade-up {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes wb-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes wb-rise {
+  from { opacity: 0; transform: scale(0.965) translate3d(0, 22px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes wb-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -9px, 0); }
+}
+
+@keyframes wb-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(4%, -6%, 0) scale(1.09); }
+  66%  { transform: translate3d(-5%, 4%, 0) scale(0.95); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes wb-sheen {
+  0%        { transform: translateX(-140%) skewX(-18deg); }
+  60%, 100% { transform: translateX(320%) skewX(-18deg); }
+}
+
+@keyframes wb-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes wb-halo {
+  0%   { opacity: 0.55; transform: scale(1); }
+  70%  { opacity: 0;    transform: scale(1.9); }
+  100% { opacity: 0;    transform: scale(1.9); }
+}
+
+@keyframes wb-progress {
+  0%        { width: 0%; }
+  55%, 100% { width: 100%; }
+}
+
+@keyframes wb-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Entrance — fires once on load. `both` fill means the element is never
+   left invisible if the animation is stripped by reduced-motion. */
+.wb-in       { animation: wb-fade-up 0.75s cubic-bezier(0.22, 0.8, 0.3, 1) both; animation-delay: var(--wb-delay, 0ms); }
+.wb-in-rise  { animation: wb-rise    0.9s  cubic-bezier(0.22, 0.8, 0.3, 1) both; animation-delay: var(--wb-delay, 0ms); }
+.wb-in-fade  { animation: wb-fade-in 1s    ease-out both;                        animation-delay: var(--wb-delay, 0ms); }
+
+.wb-float { animation: wb-float 6s ease-in-out infinite; animation-delay: var(--wb-delay, 0ms); }
+
+/* Scroll reveal — progressive enhancement, and deliberately fenced in.
+ *
+ * A view() timeline holds its element at the from-state (opacity 0) for as
+ * long as the timeline is inactive, and it is inactive when the viewport is
+ * tall enough that the page cannot scroll. Googlebot renders with exactly
+ * such a viewport, as does any full-page screenshot — so an unguarded rule
+ * here would hide most of this page from search. The max-height query keeps
+ * the effect on real screens and drops it everywhere it could cost content;
+ * `screen` keeps it out of print; `@supports` covers browsers with no
+ * scroll-driven animation at all. */
+@supports (animation-timeline: view()) {
+  @media screen and (max-height: 1100px) and (prefers-reduced-motion: no-preference) {
+    .wb-reveal {
+      animation: wb-fade-up 1s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Surfaces & decoration
+ * ------------------------------------------------------------------ */
+
+/* Soft colour wash behind the hero. Purely decorative, pointer-events off. */
+.wb-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wb-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  will-change: transform;
+  animation: wb-drift var(--wb-dur, 22s) ease-in-out infinite;
+  animation-delay: var(--wb-delay, 0ms);
+}
+
+@media (prefers-color-scheme: dark) {
+  .wb-blob { filter: blur(84px); opacity: 0.5; }
+}
+
+/* Faint engineering grid, faded out at the edges by a radial mask. */
+.wb-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--wbill-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--wbill-border) 1px, transparent 1px);
+  background-size: 58px 58px;
+  -webkit-mask-image: radial-gradient(ellipse 78% 62% at 50% 12%, #000 5%, transparent 72%);
+  mask-image: radial-gradient(ellipse 78% 62% at 50% 12%, #000 5%, transparent 72%);
+  opacity: 0.7;
+}
+
+.wb-gradient-text {
+  background-image: linear-gradient(
+    100deg,
+    var(--wbill-primary) 8%,
+    color-mix(in oklab, var(--wbill-primary) 45%, var(--wbill-success)) 92%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Lift-on-hover card. Border warms toward brand primary. */
+.wb-card {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 0.8, 0.3, 1),
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+@media (hover: hover) {
+  .wb-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--wbill-primary) 45%, var(--wbill-border));
+    box-shadow: 0 18px 36px -20px color-mix(in oklab, var(--wbill-primary) 55%, transparent);
+  }
+}
+
+/* Elevated panel — used for the phone frame and the closing CTA. */
+.wb-elevated {
+  box-shadow:
+    0 1px 2px color-mix(in oklab, var(--wbill-text-primary) 6%, transparent),
+    0 24px 60px -28px color-mix(in oklab, var(--wbill-text-primary) 42%, transparent);
+}
+
+/* Travelling highlight across a filled button or bar. */
+.wb-sheen { position: relative; overflow: hidden; isolation: isolate; }
+.wb-sheen::after {
+  content: "";
+  position: absolute;
+  inset-block: -50%;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.32), transparent);
+  animation: wb-sheen 4.5s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+  animation-delay: var(--wb-delay, 0ms);
+  pointer-events: none;
+}
+
+/* Pulsing halo behind a live/status dot. */
+.wb-halo { position: relative; }
+.wb-halo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  animation: wb-halo 2.4s ease-out infinite;
+}
+
+/* Underline that grows from the left on hover — nav links. */
+.wb-link { position: relative; }
+.wb-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 2px;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--wbill-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+.wb-link:hover::after,
+.wb-link:focus-visible::after { transform: scaleX(1); }
+
+/* Edge-to-edge ticker. Track holds the content twice; -50% is one full set. */
+.wb-marquee { -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); }
+.wb-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: wb-marquee 42s linear infinite;
+}
+@media (hover: hover) {
+  .wb-marquee:hover .wb-marquee-track { animation-play-state: paused; }
+}
+
+/* Progress fill inside the mockup's "sending" bar. */
+.wb-progress { animation: wb-progress 4.5s cubic-bezier(0.5, 0, 0.2, 1) infinite; }
+
+/* The mark's stroke drawing itself in. */
+.wb-draw {
+  stroke-dasharray: 46;
+  stroke-dashoffset: 46;
+  animation: wb-draw 1.1s cubic-bezier(0.22, 0.8, 0.3, 1) 0.15s both;
+}
+
+/* Accordion chevron. */
+details[open] .wb-chevron { transform: rotate(180deg); }
+.wb-chevron { transition: transform 0.28s cubic-bezier(0.22, 0.8, 0.3, 1); }
+summary::-webkit-details-marker { display: none; }
+
+/* Consistent focus treatment across the site. */
+:where(a, button, summary, input):focus-visible {
+  outline: 2px solid var(--wbill-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

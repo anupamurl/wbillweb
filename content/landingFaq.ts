@@ -9,7 +9,7 @@ export const landingFaq: FaqItem[] = [
   {
     question: 'Does it handle GST?',
     answer:
-      'Your business profile can carry your GSTIN, and every item on a bill has its own tax rate. wbill shows GST correctly on the bill — for filing and compliance advice, talk to your tax professional.',
+      'Your business profile can carry your GSTIN, and every item on a bill has its own tax rate. wbill shows GST correctly on the bill — for tax returns and compliance advice, talk to your tax professional.',
   },
   {
     question: 'Who owns my data?',

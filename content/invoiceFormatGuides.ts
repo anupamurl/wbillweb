@@ -53,7 +53,7 @@ export const invoiceFormatGuides: InvoiceFormatGuide[] = [
       {
         question: 'Does wbill file my GST returns?',
         answer:
-          'No. wbill generates a correctly formatted bill; filing returns is a separate step you’d handle with your accountant or GST software.',
+          'No. wbill generates a correctly formatted bill; submitting returns is a separate step you’d handle with your accountant or GST software.',
       },
     ],
   },

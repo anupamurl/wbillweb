@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { invoiceFormatGuides } from '@/content/invoiceFormatGuides';
 import GuideTemplate from '@/components/GuideTemplate';
 import FaqJsonLd from '@/components/FaqJsonLd';
+import BreadcrumbJsonLd from '@/components/BreadcrumbJsonLd';
 import { brand } from '@/lib/brand';
 
 export function generateStaticParams() {
@@ -33,6 +34,13 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   return (
     <>
       <FaqJsonLd items={guide.faq} />
+      <BreadcrumbJsonLd
+        trail={[
+          { name: 'Home', path: '/' },
+          { name: 'Invoice formats', path: '/invoice-format/' },
+          { name: guide.title, path: `/invoice-format/${guide.slug}/` },
+        ]}
+      />
       <GuideTemplate guide={guide} />
     </>
   );
