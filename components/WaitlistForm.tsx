@@ -51,7 +51,7 @@ export default function WaitlistForm({
         }`}
       >
         <Icon name="check" className="h-4 w-4" />
-        You’re on the list — we’ll email you the moment wbill launches.
+        You’re on the list — we’ll email you the day WBill launches.
       </p>
     );
   }
@@ -75,14 +75,14 @@ export default function WaitlistForm({
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@business.com"
           aria-describedby={status === 'error' ? errorId : undefined}
-          className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary shadow-sm transition-shadow placeholder:text-text-disabled focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 sm:max-w-xs"
+          className="h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-text-primary shadow-sm transition-shadow placeholder:text-text-disabled focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 sm:max-w-xs"
         />
         <button
           type="submit"
           disabled={status === 'submitting'}
-          className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25 disabled:translate-y-0 disabled:opacity-60"
+          className="wb-btn wb-btn-md group min-w-[11.5rem] shrink-0 bg-primary text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25 disabled:translate-y-0 disabled:opacity-60"
         >
-          {status === 'submitting' ? 'Joining…' : 'Get early access'}
+          {status === 'submitting' ? 'Joining…' : 'Join early access'}
           {status !== 'submitting' && (
             <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           )}

@@ -1,20 +1,18 @@
 import Faq from './Faq';
 import FaqJsonLd from './FaqJsonLd';
-import SectionHeading from './SectionHeading';
+import { SectionIntro } from './landing/primitives';
 import { landingFaq } from '@/content/landingFaq';
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="border-b border-border">
-      <div className="mx-auto max-w-3xl px-4 py-24 sm:px-6">
-        <SectionHeading
-          eyebrow="Before you ask"
-          title="Frequently asked questions"
-          align="center"
+    <section id="faq" className="scroll-mt-20 border-b border-border">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+        <SectionIntro
+          kicker="FAQ"
+          title="Questions retailers ask us."
+          lead="Something else on your mind? Write to support@wbill.app and a person will reply."
         />
-        <div className="mt-10">
-          <Faq items={landingFaq} />
-        </div>
+        <Faq items={landingFaq} />
       </div>
       <FaqJsonLd items={landingFaq} />
     </section>

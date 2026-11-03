@@ -92,9 +92,9 @@ body {
 @supports (animation-timeline: view()) {
   @media screen and (max-height: 1100px) and (prefers-reduced-motion: no-preference) {
     .wb-reveal {
-      animation: wb-fade-up 1s cubic-bezier(0.22, 0.8, 0.3, 1) both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 22%;
+      animation: wb-fade-up linear both;
+      animation-timeline: view(block auto -15%);
+      animation-range: entry 0% entry 45%;
     }
   }
 }
@@ -256,3 +256,240 @@ summary::-webkit-details-marker { display: none; }
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ------------------------------------------------------------------ *
+ * Marketing layer (web only)
+ *
+ * Brand colour stays in tokens.css, generated from the shared
+ * tokens.json. These add the landing page's own vocabulary on top:
+ * a deep navy ink for type, a violet second accent, an off-white
+ * canvas and the warm stock of a thermal paper receipt.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --wb-ink: #0A1633;
+  --wb-ink-soft: #46506A;
+  --wb-violet: #6B4EF6;
+  --wb-canvas: #F5F7FB;
+  --wb-paper: #FBF9F3;
+  --wb-paper-ink: #2B2A27;
+  --wb-chat: #DCF8C6;
+  --wb-night: #0A1633;
+  --wb-shadow:
+    0 1px 1px rgb(10 22 51 / 0.04),
+    0 2px 4px -1px rgb(10 22 51 / 0.05),
+    0 12px 24px -8px rgb(10 22 51 / 0.08),
+    0 40px 80px -32px rgb(10 22 51 / 0.18);
+  interpolate-size: allow-keywords;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wb-ink: #EEF2FA;
+    --wb-ink-soft: #A7B0C4;
+    --wb-violet: #A898FF;
+    --wb-canvas: #181B20;
+    --wb-paper: #EDEAE1;
+    --wb-paper-ink: #2B2A27;
+    --wb-chat: #1F4D36;
+    --wb-shadow:
+      0 1px 1px rgb(0 0 0 / 0.3),
+      0 12px 24px -8px rgb(0 0 0 / 0.45),
+      0 40px 80px -32px rgb(0 0 0 / 0.6);
+  }
+}
+
+@theme inline {
+  --color-ink: var(--wb-ink);
+  --color-ink-soft: var(--wb-ink-soft);
+  --color-violet: var(--wb-violet);
+  --color-canvas: var(--wb-canvas);
+  --color-paper: var(--wb-paper);
+  --color-paper-ink: var(--wb-paper-ink);
+  --color-chat: var(--wb-chat);
+  --color-night: var(--wb-night);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-feature-settings: "cv11", "ss01", "ss03";
+}
+
+.wb-shadow { box-shadow: var(--wb-shadow); }
+
+/* Display type: tight, optical, never accented word-by-word. */
+.wb-display {
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+/* Hero glow — one soft blue/violet pool, static. */
+.wb-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(48rem 26rem at 30% -8%, color-mix(in oklab, var(--wbill-primary) 16%, transparent), transparent 70%),
+    radial-gradient(40rem 24rem at 78% 4%, color-mix(in oklab, var(--wb-violet) 13%, transparent), transparent 70%);
+}
+
+/* Zig-zag tear on a thermal receipt. */
+.wb-tear {
+  --tooth: 10px;
+  -webkit-mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--tooth) 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--tooth) 51% repeat-x;
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--tooth) 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--tooth) 51% repeat-x;
+}
+
+/* Tab panel swap — answers a click, so it is always on. */
+@keyframes wb-panel-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.985); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.wb-panel-in { animation: wb-panel-in 0.45s cubic-bezier(0.22, 0.8, 0.3, 1) both; }
+
+/* Staggered children of a freshly shown panel. */
+.wb-panel-in .wb-stagger > * { animation: wb-fade-up 0.5s cubic-bezier(0.22, 0.8, 0.3, 1) both; }
+.wb-panel-in .wb-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.wb-panel-in .wb-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.wb-panel-in .wb-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.wb-panel-in .wb-stagger > *:nth-child(5) { animation-delay: 240ms; }
+
+/* Bars that grow from the baseline when their panel appears. */
+@keyframes wb-grow-y { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes wb-grow-x { from { transform: scaleX(0); } to { transform: none; } }
+.wb-bar  { transform-origin: bottom; animation: wb-grow-y 0.8s cubic-bezier(0.22, 0.8, 0.3, 1) both; animation-delay: var(--wb-delay, 0ms); }
+.wb-barx { transform-origin: left;   animation: wb-grow-x 0.9s cubic-bezier(0.22, 0.8, 0.3, 1) both; animation-delay: var(--wb-delay, 0ms); }
+
+/* WhatsApp bubble arriving. */
+@keyframes wb-pop {
+  0%   { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.92); }
+  100% { opacity: 1; transform: none; }
+}
+.wb-pop { animation: wb-pop 0.55s cubic-bezier(0.34, 1.4, 0.5, 1) both; animation-delay: var(--wb-delay, 0ms); }
+
+/* Primary CTA: lift, light sweep on hover. Magnetic offset comes from JS
+   through --mx/--my and is skipped entirely for reduced motion. */
+.wb-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
+  transition: transform 0.25s cubic-bezier(0.22, 0.8, 0.3, 1), box-shadow 0.25s ease, background-color 0.2s ease;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 1px 2px rgb(10 22 51 / 0.2),
+    0 8px 20px -8px color-mix(in oklab, var(--wbill-primary) 70%, transparent);
+}
+.wb-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+@media (hover: hover) {
+  .wb-cta:hover {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 2px 4px rgb(10 22 51 / 0.2),
+      0 14px 28px -10px color-mix(in oklab, var(--wbill-primary) 80%, transparent);
+  }
+  .wb-cta:hover::before { transform: translateX(120%); }
+}
+.wb-cta:active { transform: translate3d(var(--mx, 0px), var(--my, 0px), 0) scale(0.98); }
+
+/* Bento feature tile. */
+.wb-tile {
+  transition:
+    transform 0.4s cubic-bezier(0.22, 0.8, 0.3, 1),
+    box-shadow 0.4s ease,
+    background-color 0.4s ease,
+    border-color 0.4s ease;
+}
+.wb-tile .wb-tile-icon { transition: transform 0.5s cubic-bezier(0.34, 1.5, 0.5, 1), background-color 0.3s ease, color 0.3s ease; }
+.wb-tile .wb-tile-preview { transition: transform 0.6s cubic-bezier(0.22, 0.8, 0.3, 1); }
+@media (hover: hover) {
+  .wb-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--wb-shadow);
+    background-color: var(--wbill-surface);
+    border-color: color-mix(in oklab, var(--wbill-primary) 28%, var(--wbill-border));
+  }
+  .wb-tile:hover .wb-tile-icon { transform: rotate(-8deg) scale(1.1); background-color: var(--wbill-primary); color: #fff; }
+  .wb-tile:hover .wb-tile-preview { transform: translateY(-6px); }
+  .wb-tile:hover .wb-hover-grow { transform: scaleY(1); }
+  .wb-tile:hover .wb-hover-slide { opacity: 1; }
+}
+.wb-hover-grow { transform-origin: bottom; transform: scaleY(0.55); transition: transform 0.6s cubic-bezier(0.22, 0.8, 0.3, 1); transition-delay: var(--wb-delay, 0ms); }
+.wb-hover-slide { opacity: 0.72; transition: opacity 0.4s ease; transition-delay: var(--wb-delay, 0ms); }
+
+/* Scroll story: paper receipt hands over to the phone. Same guard as
+   .wb-reveal — without scroll-driven animation both stay fully visible. */
+@supports (animation-timeline: view()) {
+  @media screen and (max-height: 1100px) and (prefers-reduced-motion: no-preference) {
+    @keyframes wb-paper-out {
+      from { transform: translate3d(0, 0, 0) rotate(-3deg); opacity: 1; filter: none; }
+      to   { transform: translate3d(-18%, 10%, 0) rotate(-11deg) scale(0.9); opacity: 0.28; filter: grayscale(1) blur(1px); }
+    }
+    @keyframes wb-phone-in {
+      from { transform: translate3d(14%, 18%, 0) rotate(6deg); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+    @keyframes wb-scale-y { from { transform: scaleY(0.08); } to { transform: none; } }
+    @keyframes wb-scale-x { from { transform: scaleX(0); } to { transform: none; } }
+    @keyframes wb-type { from { width: 0; } to { width: var(--wb-type-w, 4ch); } }
+
+    .wb-story-paper { animation: wb-paper-out linear both; animation-timeline: view(); animation-range: cover 20% cover 55%; }
+    .wb-story-phone { animation: wb-phone-in linear both; animation-timeline: view(); animation-range: cover 18% cover 50%; }
+    .wb-story-bar   { transform-origin: bottom; animation: wb-scale-y linear both; animation-timeline: view(); animation-range: entry 40% cover 45%; }
+    .wb-story-line  { transform-origin: left;   animation: wb-scale-x linear both; animation-timeline: view(); animation-range: entry 50% cover 45%; }
+    .wb-story-type  { animation: wb-type steps(4) both; animation-timeline: view(); animation-range: entry 60% cover 40%; }
+  }
+}
+.wb-story-type { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
+
+/* Smooth accordion. Progressive: browsers without ::details-content
+   just open instantly. */
+details.wb-acc::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 0.35s cubic-bezier(0.22, 0.8, 0.3, 1), content-visibility 0.35s allow-discrete;
+}
+details.wb-acc[open]::details-content { block-size: auto; }
+
+/* Mobile nav sheet. */
+.wb-sheet { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s cubic-bezier(0.22, 0.8, 0.3, 1); }
+.wb-sheet[data-open="true"] { grid-template-rows: 1fr; }
+.wb-sheet > div { overflow: hidden; }
+
+/* Page arrival: a single short fade so the first paint never pops. */
+@keyframes wb-arrive { from { opacity: 0; } to { opacity: 1; } }
+main { animation: wb-arrive 0.4s ease-out both; }
+
+/* Hide scrollbar on horizontally scrolling tab rows. */
+.wb-noscroll { scrollbar-width: none; }
+.wb-noscroll::-webkit-scrollbar { display: none; }
+
+/* Buttons: one radius (12px), one text size (14px), three heights. */
+.wb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  line-height: 1;
+  font-weight: 600;
+}
+.wb-btn-sm { height: 36px; padding-inline: 14px; }
+.wb-btn-md { height: 44px; padding-inline: 20px; }
+.wb-btn-lg { height: 52px; padding-inline: 28px; }

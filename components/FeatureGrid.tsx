@@ -1,80 +1,222 @@
+import type { ReactNode } from 'react';
 import Icon, { type IconName } from './Icon';
-import SectionHeading from './SectionHeading';
+import { SectionIntro, StatusTag, type Availability } from './landing/primitives';
+import { formatInr } from '@/lib/currency';
 import { delay } from '@/lib/motion';
+import { demoInvoice, demoRevenue } from '@/content/demo';
 
-const features: Array<{ icon: IconName; title: string; description: string }> = [
+/* Miniature previews. Decorative: the card text carries the meaning. */
+
+function BillingPreview() {
+  return (
+    <div className="grid grid-cols-[1fr_auto] items-end gap-4">
+      <div className="rounded-xl border border-border bg-surface p-4 text-xs">
+        {demoInvoice.rows.slice(0, 2).map((row) => (
+          <p key={row.name} className="flex justify-between gap-3 py-1 text-ink-soft">
+            <span className="truncate">{row.name}</span>
+            <span className="tabular-nums text-ink">{formatInr(row.lineTotal)}</span>
+          </p>
+        ))}
+        <p className="mt-1 flex justify-between border-t border-border pt-2 font-semibold text-ink">
+          <span>Total incl. GST</span>
+          <span className="tabular-nums">{formatInr(demoInvoice.total)}</span>
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="wb-hover-slide rounded-lg bg-error/10 px-2.5 py-1.5 text-[0.65rem] font-bold text-error">PDF</span>
+        <span className="wb-hover-slide rounded-lg bg-success/15 px-2.5 py-1.5 text-[0.65rem] font-semibold text-success" style={delay(80)}>
+          Sent
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function RecordsPreview() {
+  return (
+    <div className="space-y-1.5">
+      {['INV-0148', 'INV-0131', 'INV-0097'].map((id, i) => (
+        <div
+          key={id}
+          className="wb-hover-slide flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-xs"
+          style={delay(i * 60)}
+        >
+          <span className="tabular-nums text-ink">{id}</span>
+          <span className="text-ink-soft">Riya M.</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WarrantyPreview() {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-3.5 text-xs">
+      <p className="flex justify-between text-ink-soft">
+        <span>SN-TV55-22910087</span>
+        <span className="font-medium text-success">Active</span>
+      </p>
+      <div className="mt-2.5 h-1.5 rounded-full bg-canvas">
+        <div className="wb-barx h-full w-1/3 rounded-full bg-success" />
+      </div>
+    </div>
+  );
+}
+
+function OrdersPreview() {
+  const stages = [
+    { label: 'Pending', tone: 'bg-warning' },
+    { label: 'Processing', tone: 'bg-primary' },
+    { label: 'Delivered', tone: 'bg-success' },
+  ];
+  return (
+    <div className="flex items-center gap-1.5">
+      {stages.map((stage, i) => (
+        <span
+          key={stage.label}
+          className="wb-hover-slide flex flex-1 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 py-2 text-[0.68rem] text-ink"
+          style={delay(i * 70)}
+        >
+          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${stage.tone}`} />
+          {stage.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function CustomersPreview() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex -space-x-2">
+      {['RM', 'AK', 'SP', 'NV'].map((initials, i) => (
+        <span
+          key={initials}
+          className="wb-hover-slide flex h-9 w-9 items-center justify-center rounded-full border-2 border-surface bg-primary/15 text-[0.65rem] font-semibold text-primary"
+          style={delay(i * 50)}
+        >
+          {initials}
+        </span>
+      ))}
+      </div>
+      <span className="text-xs text-ink-soft">and 120 more</span>
+    </div>
+  );
+}
+
+function AnalyticsPreview() {
+  const max = Math.max(...demoRevenue.map((d) => d.value));
+  return (
+    <div className="flex h-24 items-end gap-1.5">
+      {demoRevenue.map((d, i) => (
+        <span
+          key={d.label}
+          className="wb-hover-grow block flex-1 rounded-t bg-primary/30"
+          style={{ height: `${(d.value / max) * 100}%`, ...delay(i * 25) }}
+        />
+      ))}
+    </div>
+  );
+}
+
+const features: Array<{
+  icon: IconName;
+  title: string;
+  description: string;
+  status: Availability;
+  span: string;
+  preview: ReactNode;
+}> = [
   {
-    icon: 'percent',
-    title: 'GST and discounts, handled',
+    icon: 'receipt',
+    title: 'Digital billing',
     description:
-      'A tax rate on every item, discounts where you need them, and totals computed on our server — so the number on the bill is the number you meant.',
+      'GST and non-GST bills with a tax rate on every item, a branded PDF, and sharing on WhatsApp in one tap.',
+    status: 'ready',
+    span: 'lg:col-span-4',
+    preview: <BillingPreview />,
   },
   {
     icon: 'document',
-    title: 'Branded PDF bills',
-    description:
-      'Your business name, address and GSTIN on a clean bill your customer will take seriously. Generated and stored the moment you issue it.',
+    title: 'Digital purchase records',
+    description: 'Search any customer’s bills by name and pull up the PDF while they wait.',
+    status: 'ready',
+    span: 'lg:col-span-2',
+    preview: <RecordsPreview />,
   },
   {
-    icon: 'chat',
-    title: 'Delivered on WhatsApp',
-    description:
-      'Share the finished bill without leaving the app. No email address to ask for, and nothing for your customer to install.',
+    icon: 'shield',
+    title: 'Warranty management',
+    description: 'Serial numbers, purchase dates and warranty validity, kept with each sale.',
+    status: 'planned',
+    span: 'lg:col-span-2',
+    preview: <WarrantyPreview />,
   },
   {
-    icon: 'clock',
-    title: 'Paid, pending, overdue',
-    description:
-      'Every bill carries a status, and pending turns to overdue on its own once the due date passes. Follow-ups stop being guesswork.',
+    icon: 'layers',
+    title: 'Order management',
+    description: 'Follow every order from pending to processing to delivered.',
+    status: 'planned',
+    span: 'lg:col-span-2',
+    preview: <OrdersPreview />,
   },
   {
     icon: 'users',
-    title: 'Customers and items, saved',
-    description:
-      'Add a customer or a service once — with its default tax rate — then pick it on every bill after that. Repeat jobs take seconds.',
+    title: 'Customer management',
+    description: 'Save a customer once and build up their purchase history with every bill.',
+    status: 'ready',
+    span: 'lg:col-span-2',
+    preview: <CustomersPreview />,
   },
   {
     icon: 'chart',
-    title: 'One dashboard',
+    title: 'Sales analytics',
     description:
-      'Total sales, outstanding, overdue and invoice count, plus your recent bills — the whole business on one screen.',
+      'Total sales, outstanding amount and bill count today. Revenue trends, top products and customer behaviour next.',
+    status: 'partial',
+    span: 'lg:col-span-6',
+    preview: <AnalyticsPreview />,
   },
 ];
 
 export default function FeatureGrid() {
   return (
-    <section id="features" className="border-b border-border">
-      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
-        <SectionHeading
-          eyebrow="What you get"
-          title="Everything a bill needs. Nothing it doesn’t."
-          lead="Six things, each one shipped and working today. We would rather do a short list properly than a long list badly."
+    <section id="features" className="scroll-mt-20 border-b border-border">
+      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+        <SectionIntro
+          kicker="Features"
+          title="One record for every sale, from the bill onwards."
+          lead="Everything is built around the bill you already hand over. Each card says plainly whether it is ready at launch or still coming."
         />
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => (
-            <div
-              key={feature.title}
-              className="wb-card wb-reveal group rounded-2xl border border-border bg-surface p-6"
-              style={delay((index % 3) * 80)}
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-                <Icon name={feature.icon} className="h-5 w-5" />
-              </span>
-              <p className="mt-5 text-base font-semibold tracking-[-0.01em] text-text-primary">
-                {feature.title}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <p className="wb-reveal mt-8 text-sm text-text-secondary">
-          GST-ready means your GSTIN on the business profile, a tax rate per item, and tax shown on
-          the bill. For tax returns and compliance advice, talk to your tax professional.
-        </p>
+        <ul className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {features.map((feature, index) => {
+            const wide = feature.span === 'lg:col-span-6';
+            return (
+              <li
+                key={feature.title}
+                className={`wb-tile wb-reveal group flex flex-col gap-8 rounded-3xl border border-border bg-canvas p-6 sm:p-7 ${feature.span} ${
+                  wide ? 'sm:col-span-2 lg:flex-row lg:items-end' : ''
+                } ${index === 0 ? 'sm:col-span-2' : ''}`}
+                style={delay((index % 3) * 70)}
+              >
+                <div className={wide ? 'lg:w-[26rem]' : ''}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="wb-tile-icon flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <Icon name={feature.icon} className="h-5 w-5" />
+                    </span>
+                    <StatusTag status={feature.status} />
+                  </div>
+                  <h3 className="mt-6 text-lg font-semibold tracking-[-0.015em] text-ink">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{feature.description}</p>
+                </div>
+                <div className={`wb-tile-preview mt-auto ${wide ? 'lg:ml-auto lg:w-[28rem]' : ''}`} aria-hidden="true">
+                  {feature.preview}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );

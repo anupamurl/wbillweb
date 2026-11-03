@@ -80,7 +80,7 @@ export default function InvoiceFormatHub() {
             WhatsApp — from your phone, in seconds.
           </p>
           <Link
-            href="/#waitlist"
+            href="/#start"
             className="group mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25"
           >
             Get early access

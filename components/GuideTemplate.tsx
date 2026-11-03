@@ -142,14 +142,14 @@ export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) 
         </div>
         <div className="relative">
           <h2 className="text-xl font-semibold tracking-[-0.01em] text-text-primary sm:text-2xl">
-            Or let wbill build this bill for you
+            Or let WBill build this bill for you
           </h2>
           <p className="mx-auto mt-2.5 max-w-md text-sm leading-relaxed text-text-secondary">
             Every field above, filled in automatically, totalled correctly, and sent on WhatsApp in
             seconds — from your phone.
           </p>
           <Link
-            href="/#waitlist"
+            href="/#start"
             className="group mt-7 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25"
           >
             Get early access

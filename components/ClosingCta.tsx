@@ -1,40 +1,28 @@
 import WaitlistForm from './WaitlistForm';
-import { delay, drift } from '@/lib/motion';
+import { delay } from '@/lib/motion';
 
-/**
- * Section 9 of the landing page. Nobody scrolls back up to the hero form.
- */
+/** The single place every "Join early access" link on the page lands. */
 export default function ClosingCta() {
   return (
-    <section className="relative isolate overflow-hidden border-b border-border">
-      <div className="wb-aurora" aria-hidden="true">
+    <section id="start" className="scroll-mt-20 px-4 py-20 sm:px-6 sm:py-28">
+      <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-white/10 bg-night px-6 py-16 text-center sm:px-12 sm:py-24">
         <div
-          className="wb-blob left-[8%] top-[-40%] h-[26rem] w-[26rem] bg-primary/20"
-          style={drift(0, 26)}
+          className="absolute inset-0 -z-10 bg-[radial-gradient(40rem_20rem_at_20%_0%,color-mix(in_oklab,var(--wbill-primary)_45%,transparent),transparent_70%),radial-gradient(36rem_20rem_at_85%_100%,color-mix(in_oklab,var(--wb-violet)_40%,transparent),transparent_70%)]"
+          aria-hidden="true"
         />
-        <div
-          className="wb-blob right-[6%] bottom-[-45%] h-[24rem] w-[24rem] bg-success/15"
-          style={drift(-9000, 30)}
-        />
-      </div>
-      <div className="wb-grid" aria-hidden="true" />
-
-      <div className="relative mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
-        <h2 className="wb-reveal text-3xl font-bold tracking-[-0.025em] text-text-primary sm:text-4xl">
-          Stop writing bills by hand.
+        <h2 className="wb-reveal wb-display mx-auto max-w-3xl text-4xl text-white sm:text-6xl">
+          Give your next customer a bill they can keep.
         </h2>
         <p
-          className="wb-reveal mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg"
+          className="wb-reveal mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg"
           style={delay(60)}
         >
-          wbill isn’t on the App Store or Play Store yet. Leave your email and we’ll send you one
-          message on the day it is — nothing before, nothing after.
+          WBill is free during early access. Leave your email and we will send you one message on
+          the day the app is live.
         </p>
-        <div className="wb-reveal mt-9" style={delay(120)}>
+        <div className="wb-reveal mt-10 [&_input]:border-white/15 [&_input]:bg-white [&_input]:text-[#0A1633]" style={delay(120)}>
           <WaitlistForm source="landing-closing" align="center" />
-          <p className="mt-3 text-xs text-text-secondary">
-            Free while in early access. We’ll announce pricing before anything changes.
-          </p>
+          <p className="mt-4 text-xs text-white/60">No spam. No card. One email at launch.</p>
         </div>
       </div>
     </section>

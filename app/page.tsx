@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Hero from '@/components/Hero';
-import HowItWorks from '@/components/HowItWorks';
+import Story from '@/components/landing/Story';
 import FeatureGrid from '@/components/FeatureGrid';
-import Comparison from '@/components/Comparison';
-import BuiltForPhone from '@/components/BuiltForPhone';
-import WhoItsFor from '@/components/WhoItsFor';
+import Journey from '@/components/landing/Journey';
+import Industries from '@/components/landing/Industries';
+import Pricing from '@/components/landing/Pricing';
 import FaqSection from '@/components/FaqSection';
 import ClosingCta from '@/components/ClosingCta';
 import SoftwareApplicationJsonLd from '@/components/SoftwareApplicationJsonLd';
@@ -15,19 +15,19 @@ export const metadata: Metadata = {
 };
 
 /**
- * Section order is claim → proof → mechanism → honest comparison →
- * positioning → audience → objections → ask.
+ * Claim and live demo → story → capabilities → one sale end to end →
+ * fit for your trade → price → objections → the ask.
  */
 export default function Home() {
   return (
     <main>
       <SoftwareApplicationJsonLd />
       <Hero />
-      <HowItWorks />
+      <Story />
       <FeatureGrid />
-      <Comparison />
-      <BuiltForPhone />
-      <WhoItsFor />
+      <Journey />
+      <Industries />
+      <Pricing />
       <FaqSection />
       <ClosingCta />
     </main>
