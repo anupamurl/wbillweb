@@ -110,6 +110,7 @@ export default function AuthCard({ mode }: { mode: AuthMode }) {
       setStep('otp');
       setResendIn(RESEND_SECONDS);
     } catch (err) {
+      console.error('Sending OTP failed:', (err as { code?: string })?.code ?? err);
       resetRecaptcha();
       setError(describeAuthError(err));
     } finally {
@@ -125,6 +126,7 @@ export default function AuthCard({ mode }: { mode: AuthMode }) {
       await otpHandle.confirm(value);
       // useSession picks up the new user and the redirect effect fires.
     } catch (err) {
+      console.error('Verifying OTP failed:', (err as { code?: string })?.code ?? err);
       setError(describeAuthError(err));
       setCode('');
       codeInputRef.current?.focus();
