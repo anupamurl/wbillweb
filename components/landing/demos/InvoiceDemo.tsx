@@ -4,9 +4,9 @@ import Icon from '@/components/Icon';
 import WbillMark from '@/components/WbillMark';
 import { demoCustomer, demoInvoice, demoInvoiceDate, demoInvoiceNumber, demoShop } from '@/content/demo';
 
-/** A retail GST bill, plus the WhatsApp hand-off it ends in. */
+/** A simple mixed bill (items + labour, no GST), plus the WhatsApp hand-off it ends in. */
 export default function InvoiceDemo() {
-  const { rows, subtotal, tax, total } = demoInvoice;
+  const { rows, subtotal, discount, tax, total } = demoInvoice;
   return (
     <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.35fr_0.65fr] lg:gap-8 lg:p-8">
       {/* The bill */}
@@ -17,11 +17,11 @@ export default function InvoiceDemo() {
             <div>
               <p className="font-semibold text-ink">{demoShop.name}</p>
               <p className="text-xs text-ink-soft">{demoShop.area}</p>
-              <p className="mt-0.5 text-xs text-ink-soft">GSTIN {demoShop.gstin}</p>
+              {demoShop.gstin && <p className="mt-0.5 text-xs text-ink-soft">GSTIN {demoShop.gstin}</p>}
             </div>
           </div>
           <div className="sm:text-right">
-            <p className="text-xs text-ink-soft">Tax invoice</p>
+            <p className="text-xs text-ink-soft">{tax > 0 ? 'Tax invoice' : 'Bill'}</p>
             <p className="text-sm font-semibold tabular-nums text-ink">{demoInvoiceNumber}</p>
             <p className="text-xs text-ink-soft">{demoInvoiceDate}</p>
           </div>
@@ -29,7 +29,7 @@ export default function InvoiceDemo() {
 
         <div className="mt-5 flex items-center gap-3 rounded-lg bg-canvas px-3.5 py-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-            RM
+            RK
           </span>
           <div className="min-w-0">
             <p className="text-sm font-medium text-ink">Bill to {demoCustomer.name}</p>
@@ -41,7 +41,7 @@ export default function InvoiceDemo() {
           <thead>
             <tr className="border-b border-border text-left text-xs text-ink-soft">
               <th scope="col" className="pb-2 font-medium">Item</th>
-              <th scope="col" className="hidden pb-2 text-right font-medium sm:table-cell">GST</th>
+              <th scope="col" className="hidden pb-2 text-right font-medium sm:table-cell">Qty × Rate</th>
               <th scope="col" className="pb-2 text-right font-medium">Amount</th>
             </tr>
           </thead>
@@ -50,10 +50,10 @@ export default function InvoiceDemo() {
               <tr key={row.name} className="border-b border-border/70 align-top">
                 <td className="py-2.5 pr-3">
                   <p className="text-ink">{row.name}</p>
-                  <p className="text-xs text-ink-soft">{row.detail}</p>
+                  <p className="text-xs text-ink-soft sm:hidden">{row.detail}</p>
                 </td>
                 <td className="hidden py-2.5 text-right tabular-nums text-ink-soft sm:table-cell">
-                  {row.taxRatePercent}%
+                  {row.qty} × {formatInr(row.rate)}
                 </td>
                 <td className="py-2.5 text-right tabular-nums text-ink">{formatInr(row.lineTotal)}</td>
               </tr>
@@ -66,13 +66,25 @@ export default function InvoiceDemo() {
             <dt>Subtotal</dt>
             <dd className="tabular-nums">{formatInr(subtotal)}</dd>
           </div>
-          <div className="flex justify-between text-ink-soft">
-            <dt>GST (18% per item)</dt>
-            <dd className="tabular-nums">{formatInr(tax)}</dd>
-          </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-ink-soft">
+              <dt>Discount</dt>
+              <dd className="tabular-nums">−{formatInr(discount)}</dd>
+            </div>
+          )}
+          {tax > 0 && (
+            <div className="flex justify-between text-ink-soft">
+              <dt>GST</dt>
+              <dd className="tabular-nums">{formatInr(tax)}</dd>
+            </div>
+          )}
           <div className="flex justify-between border-t border-border pt-2 text-base font-semibold text-ink">
             <dt>Total</dt>
             <dd className="tabular-nums">{formatInr(total)}</dd>
+          </div>
+          <div className="flex justify-between pt-1 text-xs">
+            <dt className="text-ink-soft">Status</dt>
+            <dd className="rounded-full bg-success/15 px-2 py-0.5 font-semibold text-success">Paid</dd>
           </div>
         </dl>
       </div>
@@ -83,7 +95,7 @@ export default function InvoiceDemo() {
           <div className="overflow-hidden rounded-[1.35rem] bg-surface">
             <div className="flex items-center gap-2.5 border-b border-border px-4 py-3">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-success/15 text-xs font-semibold text-success">
-                RM
+                RK
               </span>
               <div>
                 <p className="text-sm font-medium text-ink">{demoCustomer.name}</p>
@@ -102,7 +114,7 @@ export default function InvoiceDemo() {
                   </div>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed">
-                  Thank you for shopping at {demoShop.name}. Your bill of {formatInr(total)} is attached.
+                  Thank you! Your bill of {formatInr(total)} from {demoShop.name} is attached.
                 </p>
                 <p className="mt-1 flex items-center justify-end gap-1 text-[0.65rem] text-ink-soft">
                   6:42 pm <Icon name="check" className="h-3 w-3 text-primary" />

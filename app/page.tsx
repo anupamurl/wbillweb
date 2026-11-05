@@ -15,18 +15,19 @@ export const metadata: Metadata = {
 };
 
 /**
- * Claim and live demo → story → capabilities → one sale end to end →
- * fit for your trade → price → objections → the ask.
+ * The job (make a bill, send it on WhatsApp) and a live demo → who it's for
+ * (every shop and trade) → paper vs phone → capabilities → one bill end to
+ * end → price → objections → the ask.
  */
 export default function Home() {
   return (
     <main>
       <SoftwareApplicationJsonLd />
       <Hero />
+      <Industries />
       <Story />
       <FeatureGrid />
       <Journey />
-      <Industries />
       <Pricing />
       <FaqSection />
       <ClosingCta />

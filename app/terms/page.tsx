@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Service" updated="23 August 2026">
+    <LegalPage title="Terms of Service" updated="5 November 2026">
       <section>
         <h2>Acceptance of terms</h2>
         <p>
@@ -23,8 +23,7 @@ export default function TermsPage() {
         <h2>Description of the service</h2>
         <p>
           wbill lets you create bills, track their status, and share them with your customers on
-          WhatsApp. It is currently free while in early access; we&rsquo;ll announce pricing before
-          anything changes.
+          WhatsApp. It is currently free to use; we&rsquo;ll announce pricing before anything changes.
         </p>
       </section>
 
@@ -32,8 +31,8 @@ export default function TermsPage() {
         <h2>Your account</h2>
         <p>
           You&rsquo;re responsible for the accuracy of the business, customer, and invoice information
-          you enter, and for keeping access to your phone number secure, since it&rsquo;s how you sign
-          in.
+          you enter, and for keeping access to your phone number or Google account secure, since
+          that&rsquo;s how you sign in.
         </p>
       </section>
 

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { brand } from '@/lib/brand';
 import { invoiceFormatGuides } from '@/content/invoiceFormatGuides';
+import { businessPages } from '@/content/businesses';
 
 export const dynamic = 'force-static';
 
@@ -19,7 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...guideRoutes].map((route) => ({
+  const businessRoutes = businessPages.map((business) => ({
+    path: `/${business.slug}/`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...businessRoutes, ...guideRoutes].map((route) => ({
     url: `${brand.url}${route.path}`,
     lastModified: new Date(),
     changeFrequency: route.changeFrequency,

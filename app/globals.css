@@ -15,8 +15,9 @@ body {
  * Everything here is CSS-only. Entrance animations run on load; scroll
  * reveals use a view() timeline behind @supports, so browsers without
  * scroll-driven animations render the same page with no motion and
- * never hide content. Nothing on this site needs JavaScript to be
- * readable — the waitlist form stays the only client component.
+ * never hide content. The marketing pages themselves need no JavaScript
+ * to be readable — only login, the dashboard and the header's auth state
+ * are client components.
  * ------------------------------------------------------------------ */
 
 @keyframes wb-fade-up {

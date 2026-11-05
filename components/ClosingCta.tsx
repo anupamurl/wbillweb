@@ -1,7 +1,7 @@
-import WaitlistForm from './WaitlistForm';
+import Icon from './Icon';
 import { delay } from '@/lib/motion';
 
-/** The single place every "Join early access" link on the page lands. */
+/** The single closing call to action on the landing page: sign up or log in. */
 export default function ClosingCta() {
   return (
     <section id="start" className="scroll-mt-20 px-4 py-20 sm:px-6 sm:py-28">
@@ -17,13 +17,18 @@ export default function ClosingCta() {
           className="wb-reveal mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg"
           style={delay(60)}
         >
-          WBill is free during early access. Leave your email and we will send you one message on
-          the day the app is live.
+          wbill is free to get started. Sign up with your phone number or Google account and make your first bill in minutes.
         </p>
-        <div className="wb-reveal mt-10 [&_input]:border-white/15 [&_input]:bg-white [&_input]:text-[#0A1633]" style={delay(120)}>
-          <WaitlistForm source="landing-closing" align="center" />
-          <p className="mt-4 text-xs text-white/60">No spam. No card. One email at launch.</p>
+        <div className="wb-reveal mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center" style={delay(120)}>
+          <a
+            href="/login"
+            className="wb-cta wb-btn wb-btn-lg group w-full bg-primary text-white sm:w-auto"
+          >
+            Login / Sign Up
+            <Icon name="arrow" className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+          </a>
         </div>
+        <p className="mt-4 text-xs text-white/60">No spam. No card. Free to get started.</p>
       </div>
     </section>
   );

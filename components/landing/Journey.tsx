@@ -22,9 +22,9 @@ function MockCard({ children }: { children: ReactNode }) {
 const steps: Step[] = [
   {
     icon: 'receipt',
-    title: 'Retailer creates the bill',
-    who: 'At the counter',
-    detail: 'Pick the customer, add products from your saved list and the GST on each line is worked out for you.',
+    title: 'You make the bill',
+    who: 'At the counter or the job',
+    detail: 'Pick the customer, add items from your saved list or a work charge, and the total is worked out for you. Add GST only if you need it.',
     status: 'ready',
     mock: (
       <MockCard>
@@ -36,7 +36,7 @@ const steps: Step[] = [
           </p>
         ))}
         <p className="mt-3 flex justify-between border-t border-border pt-3 text-sm font-semibold text-ink">
-          <span>Total incl. GST</span>
+          <span>Total</span>
           <span className="tabular-nums">{formatInr(demoInvoice.total)}</span>
         </p>
       </MockCard>
@@ -80,13 +80,13 @@ const steps: Step[] = [
   {
     icon: 'shield',
     title: 'Warranty is on record',
-    who: 'For the life of the product',
-    detail: 'Serial number and cover period stay attached to the purchase, ready when a service request comes in.',
+    who: 'For phone and electronics shops',
+    detail: 'Serial number or IMEI and cover period stay attached to the sale, ready when the customer comes back.',
     status: 'planned',
     mock: (
       <MockCard>
-        <p className="text-sm font-medium text-ink">1.5 Ton inverter split AC</p>
-        <p className="text-xs tabular-nums text-ink-soft">SN-AC15-77821</p>
+        <p className="text-sm font-medium text-ink">Smartphone 8 GB / 128 GB</p>
+        <p className="text-xs tabular-nums text-ink-soft">IMEI 35 209876 543210 1</p>
         <div className="mt-3 h-1.5 rounded-full bg-canvas">
           <div className="wb-barx h-full w-[4%] rounded-full bg-success" />
         </div>
@@ -96,7 +96,7 @@ const steps: Step[] = [
   },
   {
     icon: 'chart',
-    title: 'Retailer reviews sales',
+    title: 'You check your earnings',
     who: 'End of the month',
     detail: 'Totals, outstanding amounts and bill counts add up on their own from the bills you issued.',
     status: 'partial',
@@ -126,8 +126,8 @@ export default function Journey() {
       <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
         <SectionIntro
           kicker="How a sale flows"
-          title="One purchase, five moments."
-          lead="Follow a single sale from the counter to the monthly numbers. Select a step to see what happens."
+          title="One bill, five moments."
+          lead="Follow a single bill from the counter or the job to the monthly numbers. Select a step to see what happens."
         />
 
         <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14 [&>*]:min-w-0">

@@ -5,24 +5,28 @@
  */
 
 export const demoShop = {
-  name: 'Kumar Electronics',
-  area: 'Lajpat Nagar, New Delhi',
-  gstin: '07ABCDE1234F1Z5',
+  name: 'Sharma Hardware Store',
+  area: 'Malviya Nagar, Jaipur',
+  /** No GSTIN: the hero shows a plain (non-GST) bill — digital billing first, GST optional. */
+  gstin: '',
 };
 
 export const demoCustomer = {
-  name: 'Riya Mehta',
+  name: 'Ramesh Kumar',
   phone: '+91 98••• ••210',
 };
 
-export const demoInvoiceNumber = 'INV-2026-0148';
+export const demoInvoiceNumber = 'BILL-0142';
 export const demoInvoiceDate = '3 Nov 2026';
 
+/** A "mixed" bill: shop items and a labour line on one bill, so shops and trades both see themselves. */
 const items = [
-  { name: '1.5 Ton 5-star inverter split AC', detail: 'Serial SN-AC15-77821', qty: 1, rate: 38990, taxRatePercent: 18 },
-  { name: 'Voltage stabiliser 4 kVA', detail: 'Serial SN-ST4-10392', qty: 1, rate: 2890, taxRatePercent: 18 },
-  { name: 'Installation and copper kit', detail: '3 m copper pipe', qty: 1, rate: 1500, taxRatePercent: 18 },
+  { name: 'MCB switch, 16A', detail: '2 × ₹180', qty: 2, rate: 180, taxRatePercent: 0 },
+  { name: 'Wire, 1.5 mm', detail: '10 metre × ₹25', qty: 10, rate: 25, taxRatePercent: 0 },
+  { name: 'Fitting charge (labour)', detail: 'Service', qty: 1, rate: 300, taxRatePercent: 0 },
 ];
+
+export const demoDiscount = 30;
 
 export const demoInvoice = (() => {
   const rows = items.map((item) => {
@@ -31,7 +35,7 @@ export const demoInvoice = (() => {
   });
   const subtotal = rows.reduce((sum, row) => sum + row.lineTotal, 0);
   const tax = rows.reduce((sum, row) => sum + row.taxAmount, 0);
-  return { rows, subtotal, tax, total: subtotal + tax };
+  return { rows, subtotal, discount: demoDiscount, tax, total: subtotal - demoDiscount + tax };
 })();
 
 /** Warranty records are measured against this fixed date, so the page renders the same everywhere. */
@@ -60,30 +64,30 @@ export function formatDate(date: Date) {
 }
 
 export const demoRevenue = [
-  { label: 'Dec', value: 312000 },
-  { label: 'Jan', value: 268000 },
-  { label: 'Feb', value: 245000 },
-  { label: 'Mar', value: 356000 },
-  { label: 'Apr', value: 418000 },
-  { label: 'May', value: 497000 },
-  { label: 'Jun', value: 452000 },
-  { label: 'Jul', value: 331000 },
-  { label: 'Aug', value: 364000 },
-  { label: 'Sep', value: 402000 },
-  { label: 'Oct', value: 538000 },
-  { label: 'Nov', value: 482300 },
+  { label: 'Dec', value: 142000 },
+  { label: 'Jan', value: 128000 },
+  { label: 'Feb', value: 119000 },
+  { label: 'Mar', value: 151000 },
+  { label: 'Apr', value: 163000 },
+  { label: 'May', value: 171000 },
+  { label: 'Jun', value: 158000 },
+  { label: 'Jul', value: 139000 },
+  { label: 'Aug', value: 147000 },
+  { label: 'Sep', value: 156000 },
+  { label: 'Oct', value: 198000 },
+  { label: 'Nov', value: 176400 },
 ];
 
 export const demoTopProducts = [
-  { name: 'Split ACs', share: 0.34 },
-  { name: 'Smart TVs', share: 0.24 },
-  { name: 'Refrigerators', share: 0.18 },
-  { name: 'Smartphones', share: 0.14 },
+  { name: 'Electrical items', share: 0.32 },
+  { name: 'Plumbing items', share: 0.24 },
+  { name: 'Paint and tools', share: 0.19 },
+  { name: 'Fitting and labour', share: 0.15 },
 ];
 
 export const demoKpis = {
-  revenue: 482300,
-  bills: 214,
-  repeatPercent: 38,
-  averageBill: 2254,
+  revenue: 176400,
+  bills: 312,
+  repeatPercent: 41,
+  averageBill: 565,
 };

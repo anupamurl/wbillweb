@@ -18,12 +18,13 @@ function computeTotals(guide: InvoiceFormatGuide) {
 
 export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) {
   const { rows, subtotal, taxTotal, grandTotal } = computeTotals(guide);
+  const hasGst = rows.some((row) => row.taxRatePercent > 0);
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <nav aria-label="Breadcrumb" className="text-sm text-text-secondary">
         <Link href="/invoice-format" className="transition-colors hover:text-text-primary">
-          Invoice formats
+          Bill formats
         </Link>
         <span className="mx-2 text-text-disabled">/</span>
         <span className="text-text-primary">{guide.title}</span>
@@ -76,7 +77,7 @@ export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) 
                   <th scope="col" className="px-5 py-3 font-semibold">Item</th>
                   <th scope="col" className="px-5 py-3 text-right font-semibold">Qty</th>
                   <th scope="col" className="px-5 py-3 text-right font-semibold">Rate</th>
-                  <th scope="col" className="px-5 py-3 text-right font-semibold">GST</th>
+                  {hasGst && <th scope="col" className="px-5 py-3 text-right font-semibold">GST</th>}
                   <th scope="col" className="px-5 py-3 text-right font-semibold">Amount</th>
                 </tr>
               </thead>
@@ -86,7 +87,7 @@ export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) 
                     <td className="px-5 py-3 text-text-primary">{row.name}</td>
                     <td className="px-5 py-3 text-right tabular-nums text-text-secondary">{row.quantity}</td>
                     <td className="px-5 py-3 text-right tabular-nums text-text-secondary">{formatInr(row.unitPrice)}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-text-secondary">{row.taxRatePercent}%</td>
+                    {hasGst && <td className="px-5 py-3 text-right tabular-nums text-text-secondary">{row.taxRatePercent}%</td>}
                     <td className="px-5 py-3 text-right tabular-nums text-text-primary">{formatInr(row.lineTotal)}</td>
                   </tr>
                 ))}
@@ -98,10 +99,12 @@ export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) 
               <span>Subtotal</span>
               <span className="tabular-nums">{formatInr(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-text-secondary">
-              <span>GST</span>
-              <span className="tabular-nums">{formatInr(taxTotal)}</span>
-            </div>
+            {hasGst && (
+              <div className="flex justify-between text-text-secondary">
+                <span>GST</span>
+                <span className="tabular-nums">{formatInr(taxTotal)}</span>
+              </div>
+            )}
             <div className="flex justify-between pt-1 text-base font-semibold text-text-primary">
               <span>Total</span>
               <span className="tabular-nums">{formatInr(grandTotal)}</span>
@@ -142,17 +145,17 @@ export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) 
         </div>
         <div className="relative">
           <h2 className="text-xl font-semibold tracking-[-0.01em] text-text-primary sm:text-2xl">
-            Or let WBill build this bill for you
+            Or let wbill build this bill for you
           </h2>
           <p className="mx-auto mt-2.5 max-w-md text-sm leading-relaxed text-text-secondary">
             Every field above, filled in automatically, totalled correctly, and sent on WhatsApp in
             seconds — from your phone.
           </p>
           <Link
-            href="/#start"
+            href="/login"
             className="group mt-7 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25"
           >
-            Get early access
+            Get started free
             <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>

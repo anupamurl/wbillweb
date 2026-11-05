@@ -19,6 +19,8 @@ export interface GuideExample {
 
 export interface InvoiceFormatGuide {
   slug: string;
+  /** Which group the guide is listed under on the hub. */
+  group: 'general' | 'shop' | 'service';
   title: string;
   description: string;
   audience: string;

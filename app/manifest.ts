@@ -5,9 +5,9 @@ export const dynamic = 'force-static';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'WBill: digital bills and receipts',
-    short_name: 'WBill',
-    description: 'Digital bills and receipts for Indian retailers, shared on WhatsApp.',
+    name: 'wbill - Digital Billing App',
+    short_name: 'wbill',
+    description: 'Make bills on your phone and send them on WhatsApp. For every small shop and service business in India.',
     start_url: '/',
     display: 'standalone',
     background_color: brand.colors.light.background,

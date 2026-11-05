@@ -37,7 +37,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       <BreadcrumbJsonLd
         trail={[
           { name: 'Home', path: '/' },
-          { name: 'Invoice formats', path: '/invoice-format/' },
+          { name: 'Bill formats', path: '/invoice-format/' },
           { name: guide.title, path: `/invoice-format/${guide.slug}/` },
         ]}
       />

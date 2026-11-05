@@ -92,12 +92,59 @@ const paths: Record<string, React.ReactNode> = {
     </>
   ),
   hash: <path d="M9 3.5 7 20.5M17 3.5l-2 17M4.5 8.5h15M3.5 15.5h15" />,
+  store: (
+    <>
+      <path d="M4 9.5 5.5 4.5h13L20 9.5" />
+      <path d="M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0" />
+      <path d="M5.5 12v8h13v-8" />
+      <path d="M10 20v-4.5h4V20" />
+    </>
+  ),
+  wrench: (
+    <>
+      <path d="M14.5 6.5a4 4 0 0 0 5 5l-8.8 8.8a2.1 2.1 0 0 1-3-3l8.8-8.8a4 4 0 0 1-2-2z" />
+      <path d="M14.5 6.5 17 4l3 3-2.5 2.5" />
+    </>
+  ),
+  scissors: (
+    <>
+      <circle cx="6.5" cy="7" r="2.5" />
+      <circle cx="6.5" cy="17" r="2.5" />
+      <path d="M8.6 8.4 19.5 18M8.6 15.6 19.5 6" />
+    </>
+  ),
+  shirt: (
+    <>
+      <path d="M9 4 4 6.5l1.5 4L7.5 10v10h9V10l2 .5 1.5-4L15 4a3 3 0 0 1-6 0z" />
+    </>
+  ),
+  tap: (
+    <>
+      <path d="M4 10.5h9a3 3 0 0 1 3 3V15" />
+      <path d="M4 7.5v6M9 7.5V5h-3M7.5 5h3" />
+      <path d="M16 18.5c0 1-.7 1.5-1.5 1.5S13 19.5 13 18.5c0-.9 1.5-2.5 1.5-2.5s1.5 1.6 1.5 2.5z" />
+    </>
+  ),
+  fan: (
+    <>
+      <circle cx="12" cy="12" r="1.6" />
+      <path d="M12 10.4c-1-3.4.3-6.4 3-6.4 2.6 0 2.6 4-3 6.4zM13.4 12.8c3.4.8 5.5 3.3 4.1 5.6-1.3 2.3-4.7.2-4.1-5.6zM10.6 12.8c-2.4 2.6-5.6 3-6.9.7-1.3-2.3 2.2-4.1 6.9-.7z" />
+    </>
+  ),
+  brush: (
+    <>
+      <path d="M5 4.5h12v5H5z" />
+      <path d="M17 7h2v5h-7v3" />
+      <path d="M11 15h2v5.5h-2z" />
+    </>
+  ),
 };
 
 export type IconName =
   | 'receipt' | 'percent' | 'document' | 'chat' | 'clock' | 'users' | 'chart'
   | 'phone' | 'key' | 'bolt' | 'shield' | 'check' | 'cross' | 'chevron'
-  | 'menu' | 'arrow' | 'sparkle' | 'layers' | 'hash';
+  | 'menu' | 'arrow' | 'sparkle' | 'layers' | 'hash'
+  | 'store' | 'wrench' | 'scissors' | 'shirt' | 'tap' | 'fan' | 'brush';
 
 export default function Icon({ name, className = 'h-5 w-5' }: IconProps) {
   return (

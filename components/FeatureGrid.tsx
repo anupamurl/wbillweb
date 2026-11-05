@@ -18,7 +18,7 @@ function BillingPreview() {
           </p>
         ))}
         <p className="mt-1 flex justify-between border-t border-border pt-2 font-semibold text-ink">
-          <span>Total incl. GST</span>
+          <span>Total</span>
           <span className="tabular-nums">{formatInr(demoInvoice.total)}</span>
         </p>
       </div>
@@ -35,14 +35,14 @@ function BillingPreview() {
 function RecordsPreview() {
   return (
     <div className="space-y-1.5">
-      {['INV-0148', 'INV-0131', 'INV-0097'].map((id, i) => (
+      {['BILL-0142', 'BILL-0131', 'BILL-0097'].map((id, i) => (
         <div
           key={id}
           className="wb-hover-slide flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-xs"
           style={delay(i * 60)}
         >
           <span className="tabular-nums text-ink">{id}</span>
-          <span className="text-ink-soft">Riya M.</span>
+          <span className="text-ink-soft">Ramesh K.</span>
         </div>
       ))}
     </div>
@@ -53,7 +53,7 @@ function WarrantyPreview() {
   return (
     <div className="rounded-xl border border-border bg-surface p-3.5 text-xs">
       <p className="flex justify-between text-ink-soft">
-        <span>SN-TV55-22910087</span>
+        <span>IMEI 35 2098…210 1</span>
         <span className="font-medium text-success">Active</span>
       </p>
       <div className="mt-2.5 h-1.5 rounded-full bg-canvas">
@@ -131,23 +131,23 @@ const features: Array<{
     icon: 'receipt',
     title: 'Digital billing',
     description:
-      'GST and non-GST bills with a tax rate on every item, a branded PDF, and sharing on WhatsApp in one tap.',
+      'Simple bills with items, quantity, labour or service charges and discount. Add GST only if you need it. A clean PDF, shared on WhatsApp in one tap.',
     status: 'ready',
     span: 'lg:col-span-4',
     preview: <BillingPreview />,
   },
   {
     icon: 'document',
-    title: 'Digital purchase records',
-    description: 'Search any customer’s bills by name and pull up the PDF while they wait.',
+    title: 'Every bill saved',
+    description: 'Search any customer’s bills by name and send the PDF again while they wait.',
     status: 'ready',
     span: 'lg:col-span-2',
     preview: <RecordsPreview />,
   },
   {
     icon: 'shield',
-    title: 'Warranty management',
-    description: 'Serial numbers, purchase dates and warranty validity, kept with each sale.',
+    title: 'Warranty for phone & electronics shops',
+    description: 'Serial number or IMEI, purchase date and warranty, kept with each sale.',
     status: 'planned',
     span: 'lg:col-span-2',
     preview: <WarrantyPreview />,
@@ -155,7 +155,7 @@ const features: Array<{
   {
     icon: 'layers',
     title: 'Order management',
-    description: 'Follow every order from pending to processing to delivered.',
+    description: 'Follow every order or job from pending to in progress to delivered.',
     status: 'planned',
     span: 'lg:col-span-2',
     preview: <OrdersPreview />,
@@ -163,7 +163,7 @@ const features: Array<{
   {
     icon: 'users',
     title: 'Customer management',
-    description: 'Save a customer once and build up their purchase history with every bill.',
+    description: 'Save a customer once and see every bill you have given them.',
     status: 'ready',
     span: 'lg:col-span-2',
     preview: <CustomersPreview />,
@@ -172,7 +172,7 @@ const features: Array<{
     icon: 'chart',
     title: 'Sales analytics',
     description:
-      'Total sales, outstanding amount and bill count today. Revenue trends, top products and customer behaviour next.',
+      'Today’s sales, pending amount and bill count at launch. Monthly trends, top items and repeat customers next.',
     status: 'partial',
     span: 'lg:col-span-6',
     preview: <AnalyticsPreview />,
@@ -185,8 +185,8 @@ export default function FeatureGrid() {
       <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
         <SectionIntro
           kicker="Features"
-          title="One record for every sale, from the bill onwards."
-          lead="Everything is built around the bill you already hand over. Each card says plainly whether it is ready at launch or still coming."
+          title="Everything a small business needs from a bill."
+          lead="Built around the bill you already give — at a shop counter or after a job. Each card says plainly whether it is ready at launch or still coming."
         />
 
         <ul className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">

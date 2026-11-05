@@ -24,17 +24,8 @@ const tabs: Tab[] = [
     icon: 'receipt',
     window: 'New bill',
     status: 'ready',
-    note: 'GST per item, a branded PDF and sharing on WhatsApp are built and ship with the app.',
+    note: 'Items, labour charges, discount, optional GST, a clean PDF and sharing on WhatsApp are built and ship with the app.',
     panel: <InvoiceDemo />,
-  },
-  {
-    id: 'warranty',
-    label: 'Warranty tracking',
-    icon: 'shield',
-    window: 'Warranty',
-    status: 'planned',
-    note: 'Dedicated warranty records are on the roadmap. At launch you can note a serial number in the item description.',
-    panel: <WarrantyDemo />,
   },
   {
     id: 'analytics',
@@ -44,6 +35,15 @@ const tabs: Tab[] = [
     status: 'partial',
     note: 'Total sales, outstanding amount and bill count are ready at launch. Charts, top products and repeat customers come later.',
     panel: <AnalyticsDemo />,
+  },
+  {
+    id: 'warranty',
+    label: 'Warranty (phone shops)',
+    icon: 'shield',
+    window: 'Warranty',
+    status: 'planned',
+    note: 'Dedicated warranty records are on the roadmap. Useful for mobile, electronics and appliance shops. At launch you can note a serial number or IMEI in the item description.',
+    panel: <WarrantyDemo />,
   },
 ];
 
@@ -129,7 +129,7 @@ export default function ProductDemo() {
             tabIndex={0}
             className={index === active && touched ? 'wb-panel-in' : undefined}
           >
-            <AppWindow title={`WBill / ${tab.window}`} className="bg-canvas">
+            <AppWindow title={`wbill / ${tab.window}`} className="bg-canvas">
               {tab.panel}
             </AppWindow>
           </div>

@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import WbillMark from './WbillMark';
 import Icon from './Icon';
+import { signOutEverywhere, useSession } from '@/lib/session';
 
 const navLinks = [
   { href: '/#product', label: 'Product' },
   { href: '/#features', label: 'Features' },
-  { href: '/#industries', label: 'Industries' },
+  { href: '/#industries', label: 'Who it’s for' },
   { href: '/#pricing', label: 'Pricing' },
   { href: '/#faq', label: 'FAQ' },
 ];
@@ -17,12 +18,15 @@ const navLinks = [
  * The outer header keeps a fixed 64px box so nothing below it moves; only
  * the inner bar compacts, turns translucent and picks up a border on scroll.
  *
- * There is no web login yet — accounts live in the mobile app, which signs
- * in by phone OTP — so the bar carries one action, not a dead Login link.
+ * The site-wide session hook decides the one auth-dependent action: signed
+ * out it's Login / Sign Up, signed in it's Dashboard + Logout. Marketing
+ * pages never load Firebase unless this browser has signed in before.
  */
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const session = useSession();
+  const signedIn = session.status === 'signedIn';
 
   useEffect(() => {
     let frame = 0;
@@ -71,7 +75,7 @@ export default function Header() {
           >
             <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
               <WbillMark size={compact ? 26 : 30} />
-              <span className="text-[1.05rem] font-semibold tracking-[-0.02em] text-ink">WBill</span>
+              <span className="text-[1.05rem] font-semibold tracking-[-0.02em] text-ink">wbill</span>
             </Link>
 
             <nav aria-label="Primary" className="hidden items-center gap-1 text-sm lg:flex">
@@ -87,12 +91,30 @@ export default function Header() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <a
-                href="/#start"
-                className="wb-cta wb-btn wb-btn-sm hidden bg-primary text-white sm:inline-flex"
-              >
-                Join early access
-              </a>
+              {signedIn ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="wb-btn wb-btn-sm hidden border border-border bg-surface text-ink sm:inline-flex"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => signOutEverywhere()}
+                    className="hidden rounded-lg px-3 py-1.5 text-sm text-ink-soft transition-colors hover:bg-ink/5 hover:text-ink sm:inline-flex"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="wb-cta wb-btn wb-btn-sm hidden bg-primary text-white sm:inline-flex"
+                >
+                  Login / Sign Up
+                </Link>
+              )}
               <button
                 type="button"
                 aria-expanded={open}
@@ -134,13 +156,35 @@ export default function Header() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/#start"
-                  onClick={() => setOpen(false)}
-                  className="wb-cta wb-btn wb-btn-md mt-2 flex w-full bg-primary text-white"
-                >
-                  Join early access
-                </a>
+                {signedIn ? (
+                  <div className="mt-2 flex flex-col gap-2">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="wb-btn wb-btn-md flex w-full border border-border bg-surface text-ink"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        void signOutEverywhere();
+                      }}
+                      className="wb-btn wb-btn-md flex w-full text-ink-soft"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="wb-cta wb-btn wb-btn-md mt-2 flex w-full bg-primary text-white"
+                  >
+                    Login / Sign Up
+                  </Link>
+                )}
               </nav>
             </div>
           </div>

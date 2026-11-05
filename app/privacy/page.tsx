@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="23 August 2026">
+    <LegalPage title="Privacy Policy" updated="5 November 2026">
       <section>
         <h2>Overview</h2>
         <p>
@@ -24,11 +24,11 @@ export default function PrivacyPage() {
         <h2>Information we collect</h2>
         <ul>
           <li>Your phone number, used to sign you in with a one-time code — we don&rsquo;t use passwords.</li>
+          <li>If you sign in with Google, the name, email address and profile photo Google shares with us for that purpose.</li>
           <li>Your business profile: business name, address, and GSTIN if you provide one.</li>
           <li>Customer records you enter: name, phone number, address, and GSTIN where applicable.</li>
           <li>Invoice and line-item data: what you billed, to whom, and for how much.</li>
           <li>The PDF bills generated from that data, stored so you can retrieve them later.</li>
-          <li>If you join our early-access waitlist, your email address and a hashed version of your IP address — the hash is used only to prevent abuse, and we never store or use your raw IP address.</li>
         </ul>
       </section>
 

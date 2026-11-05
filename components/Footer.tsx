@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import WbillMark from './WbillMark';
 import { brand } from '@/lib/brand';
+import { social } from '@/lib/social';
 
 const columns = [
   {
@@ -8,7 +9,7 @@ const columns = [
     links: [
       { href: '/#product', label: 'Product' },
       { href: '/#features', label: 'Features' },
-      { href: '/#industries', label: 'Industries' },
+      { href: '/#industries', label: 'Who it’s for' },
       { href: '/#pricing', label: 'Pricing' },
       { href: '/#faq', label: 'FAQ' },
     ],
@@ -16,10 +17,10 @@ const columns = [
   {
     heading: 'Free guides',
     links: [
+      { href: '/invoice-format/#group-shop', label: 'Shop bill formats' },
+      { href: '/invoice-format/#group-service', label: 'Service bill formats' },
+      { href: '/invoice-format/simple-bill-format', label: 'Bill format without GST' },
       { href: '/invoice-format', label: 'All bill formats' },
-      { href: '/invoice-format/gst-invoice-format', label: 'GST invoice format' },
-      { href: '/invoice-format/electrician', label: 'Electrician bill format' },
-      { href: '/invoice-format/freelancer', label: 'Freelancer invoice format' },
     ],
   },
   {
@@ -42,11 +43,12 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2.5">
               <WbillMark size={28} />
-              <span className="text-base font-semibold tracking-[-0.02em] text-ink">WBill</span>
+              <span className="text-base font-semibold tracking-[-0.02em] text-ink">wbill</span>
+              <span className="text-sm text-text-secondary">· Digital Billing App</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-text-secondary">
-              Every purchase deserves a digital record. Digital bills, receipts and purchase
-              history for India&rsquo;s electronics, mobile and appliance retailers.
+              Digital bills on WhatsApp for every small shop and service business in India.
+              <span className="mt-1 block" lang="hi-Latn">Phone se bill banao, WhatsApp pe bhejo.</span>
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {['App Store', 'Google Play'].map((store) => (
@@ -90,8 +92,19 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-border pt-6 text-xs text-text-secondary sm:flex-row sm:items-center sm:justify-between">
-          <span>&copy; {year} WBill. All rights reserved.</span>
+          <span>&copy; {year} wbill. All rights reserved.</span>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {social.map((account) => (
+              <a
+                key={account.id}
+                href={account.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-text-primary"
+              >
+                {account.label} {account.handle}
+              </a>
+            ))}
             <span>Made in India</span>
             <a href={`mailto:${brand.email}`} className="transition-colors hover:text-text-primary">
               {brand.email}

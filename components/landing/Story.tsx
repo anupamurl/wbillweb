@@ -65,7 +65,7 @@ function PaperToPhone() {
                   </p>
                 ))}
                 <p className="flex justify-between border-t border-border pt-1.5 text-xs font-semibold text-ink">
-                  <span>Total incl. GST</span>
+                  <span>Total</span>
                   <span className="tabular-nums">{formatInr(total)}</span>
                 </p>
               </div>
@@ -82,10 +82,10 @@ function PaperToPhone() {
 
 function PurchaseSearch() {
   const results = [
-    { item: '1.5 Ton inverter split AC', date: '3 Nov 2026', amount: demoInvoice.total },
-    { item: 'Bluetooth soundbar', date: '14 Aug 2026', amount: 8259 },
-    { item: 'Smartphone, 128 GB', date: '22 Jan 2026', amount: 21999 },
-    { item: '55-inch 4K smart TV', date: '12 Mar 2026', amount: 46990 },
+    { item: 'MCB, wire and fitting', date: '3 Nov 2026', amount: demoInvoice.total },
+    { item: 'Bathroom tap and pipe', date: '14 Aug 2026', amount: 1240 },
+    { item: 'Wall paint, 10 L', date: '22 Jan 2026', amount: 2650 },
+    { item: 'Ceiling fan and fitting', date: '12 Mar 2026', amount: 2890 },
   ];
   return (
     <div className="wb-shadow mx-auto w-full max-w-md rounded-2xl border border-border bg-surface p-5">
@@ -96,7 +96,7 @@ function PurchaseSearch() {
       <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-primary/40 bg-canvas px-3.5 py-2.5 ring-4 ring-primary/10">
         <Icon name="hash" className="h-4 w-4 text-ink-soft" />
         <span className="text-sm text-ink">
-          <span className="wb-story-type" style={{ ['--wb-type-w' as string]: '4ch' }}>Riya</span>
+          <span className="wb-story-type" style={{ ['--wb-type-w' as string]: '6ch' }}>Ramesh</span>
           <span className="ml-px inline-block h-4 w-px translate-y-0.5 animate-pulse bg-primary" />
         </span>
       </div>
@@ -208,7 +208,7 @@ function LiveDashboard() {
           />
         ))}
       </div>
-      <p className="mt-3 text-xs text-ink-soft">Best month: October, led by split ACs before Diwali.</p>
+      <p className="mt-3 text-xs text-ink-soft">Best month: October, busy before Diwali.</p>
     </div>
   );
 }
@@ -224,30 +224,30 @@ type Chapter = {
 
 const chapters: Chapter[] = [
   {
-    title: 'The paper bill is becoming a thing of the past.',
+    title: 'Close the paper bill book for good.',
     body:
-      'Thermal slips fade in a drawer and handwritten memos get lost. A WBill receipt is generated once, stored safely and lands on your customer’s phone over WhatsApp.',
+      'Paper slips fade in a drawer and bill books get lost. A wbill bill is made on your phone in seconds, saved safely and lands on your customer’s phone over WhatsApp.',
     status: 'ready',
     visual: <PaperToPhone />,
   },
   {
-    title: 'Never lose a purchase record again.',
+    title: 'Never lose a bill again.',
     body:
-      'A customer walks in asking for last year’s bill. Type their name and every bill you have issued them is there, in seconds, with the PDF one tap away.',
+      'A customer asks for last year’s bill. Type their name and every bill you have given them is there, in seconds, with the PDF one tap away.',
     status: 'ready',
     visual: <PurchaseSearch />,
   },
   {
-    title: 'Warranty information, always accessible.',
+    title: 'Selling phones or electronics? Warranty stays with the bill.',
     body:
-      'Serial number, purchase date and cover period, kept with the bill. When a claim comes in, you know at a glance whether it is still covered.',
+      'For mobile, electronics and appliance shops: serial number, IMEI, purchase date and cover period, kept with the bill. When a claim comes in, you know at a glance whether it is still covered.',
     status: 'planned',
     visual: <WarrantyTimeline />,
   },
   {
-    title: 'Your retail business, understood better.',
+    title: 'Know your business, without a diary.',
     body:
-      'See what you sold, how much is outstanding and which months carry the year. Every number comes straight from the bills you already issue.',
+      'See what you earned, how much is still pending and which months are busy. Every number comes straight from the bills you already make.',
     status: 'partial',
     visual: <LiveDashboard />,
   },
@@ -260,8 +260,8 @@ export default function Story() {
         <div className="pt-24 sm:pt-32">
           <SectionIntro
             kicker="From paper to digital"
-            title="From paper bill to digital record."
-            lead="Four moments in the life of a purchase, and what changes when the bill is digital."
+            title="From bill book to phone."
+            lead="Four moments in the life of a bill, and what changes when it is digital — for a shop counter or a job at a customer’s home."
           />
         </div>
         {chapters.map((chapter, index) => (

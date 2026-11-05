@@ -3,6 +3,7 @@ import type { InvoiceFormatGuide } from './types';
 export const invoiceFormatGuides: InvoiceFormatGuide[] = [
   {
     slug: 'gst-invoice-format',
+    group: 'general',
     title: 'GST Invoice Format: What Every GST Bill Must Include',
     description: 'The mandatory fields a GST invoice needs in India, explained simply, with a worked example.',
     audience: 'Any GST-registered business',
@@ -20,16 +21,17 @@ export const invoiceFormatGuides: InvoiceFormatGuide[] = [
       'The total invoice value, in figures',
     ],
     example: {
-      businessName: 'Sharma Electricals',
+      businessName: 'Agarwal General Store',
       customerName: 'Verma Traders',
       items: [
-        { name: 'AC gas top-up', quantity: 1, unitPrice: 800, taxRatePercent: 18 },
-        { name: 'Service call — 2 units', quantity: 2, unitPrice: 600, taxRatePercent: 18 },
+        { name: 'Basmati rice, 5 kg bag', quantity: 2, unitPrice: 520, taxRatePercent: 5 },
+        { name: 'Desi ghee, 1 litre', quantity: 1, unitPrice: 610, taxRatePercent: 5 },
+        { name: 'Extension board, 4 socket', quantity: 1, unitPrice: 350, taxRatePercent: 18 },
       ],
       notes: 'Payment due within 7 days.',
     },
     taxNote:
-      "GST is calculated per line item, not on the invoice total — that's what lets a single bill mix items taxed at different rates (5%, 12%, 18%, 28%) without the maths going wrong. wbill calculates each line's tax automatically from the rate on the item and totals it for you.",
+      "GST is calculated per line item, not on the invoice total — that's what lets a single bill mix items taxed at different rates (for example 5% on groceries and 18% on an electrical item) without the maths going wrong. Check the current rate for each item with your tax professional. wbill calculates each line's tax automatically from the rate on the item and totals it for you.",
     commonMistakes: [
       'Reusing an invoice number, or skipping one in the sequence',
       "Leaving the customer's GSTIN off a B2B sale, so they can't claim input tax credit",
@@ -58,7 +60,121 @@ export const invoiceFormatGuides: InvoiceFormatGuide[] = [
     ],
   },
   {
+    slug: 'kirana-shop',
+    group: 'shop',
+    title: 'Kirana Shop Bill Format',
+    description: 'What to put on a bill for a kirana or general store — with a worked example, the mistakes that come up most, and how to handle monthly customers.',
+    audience: 'Kirana, grocery & general stores',
+    intro:
+      "Most kirana bills are a slip torn from a bill book, or nothing at all. That works until a regular customer disputes the month's total, or asks for last month's bill. A proper bill — even a simple one without GST — settles both in seconds.",
+    mustInclude: [
+      'Your shop name, address and phone number',
+      'A bill number, in order, and the date',
+      "The customer's name (and phone number, if you send it on WhatsApp)",
+      'Each item with its unit — kg, litre, packet or piece',
+      'The quantity and rate of each item, and the line amount',
+      'Any discount, shown separately',
+      'The total, and whether it is paid or still pending',
+      "GST and your GSTIN only if you're registered",
+    ],
+    example: {
+      businessName: 'Gupta General Store',
+      customerName: 'Sunita Verma',
+      items: [
+        { name: 'Atta (kg)', quantity: 10, unitPrice: 38, taxRatePercent: 0 },
+        { name: 'Mustard oil, 1 litre', quantity: 2, unitPrice: 165, taxRatePercent: 0 },
+        { name: 'Toor dal (kg)', quantity: 2, unitPrice: 140, taxRatePercent: 0 },
+        { name: 'Sugar (kg)', quantity: 3, unitPrice: 44, taxRatePercent: 0 },
+      ],
+      notes: 'Monthly ration — pay on the 1st.',
+    },
+    taxNote:
+      "Most small kirana stores are not GST-registered and give a simple bill with no tax. If you are registered, every item needs its own GST rate on the bill — wbill works out each line's tax from the rate on the item.",
+    commonMistakes: [
+      'Writing "grocery items" instead of each item, so the customer cannot check the bill',
+      'Leaving out the unit, so "2 oil" could mean two packets or two litres',
+      'Not writing the bill number, so two bills on the same day get mixed up',
+      'Keeping monthly credit only in a diary, with no bill the customer can see',
+    ],
+    faq: [
+      {
+        question: 'Do I need a GST number to give a bill?',
+        answer: "No. If you're not GST-registered, give a simple bill without GST. It is still a proper record of the sale.",
+      },
+      {
+        question: 'How do I bill monthly (udhaar) customers?',
+        answer:
+          'Give a bill for each purchase and keep it pending. At the end of the month, the pending bills under the customer’s name show what they owe. In wbill, you can send them all again on WhatsApp.',
+      },
+      {
+        question: 'Can I send the bill on WhatsApp instead of paper?',
+        answer: 'Yes. A PDF bill on WhatsApp is a clear record for both of you, and it does not fade or get lost.',
+      },
+      {
+        question: 'Should I give a bill for small amounts?',
+        answer: 'It helps. Even a ₹200 bill is a record of what you sold — useful when you add up the month or a customer asks.',
+      },
+    ],
+  },
+  {
+    slug: 'simple-bill-format',
+    group: 'shop',
+    title: 'Simple Bill Format Without GST',
+    description: 'A simple bill format for small shops and service businesses that are not GST-registered — items, labour charges and discount, with a worked example.',
+    audience: 'Any shop or service, no GST',
+    intro:
+      "Most small businesses in India are not GST-registered, and they don't need a complicated tax invoice. They need a clear bill: what was sold or done, at what rate, and the total. Here is what to put on it — for a shop counter or a job at a customer's home.",
+    mustInclude: [
+      'Your business name and phone number (and address, if you have a shop)',
+      'A bill number and the date',
+      "The customer's name and phone number",
+      'Each item or piece of work on its own line',
+      'Quantity and rate for each line — and the unit for items sold by kg, metre or litre',
+      'Labour, fitting, visit or delivery charges as separate lines',
+      'Any discount, and the final total',
+      'Paid or pending, and how it was paid (cash or UPI)',
+    ],
+    example: {
+      businessName: 'Sharma Hardware Store',
+      customerName: 'Ramesh Kumar',
+      items: [
+        { name: 'MCB switch, 16A', quantity: 2, unitPrice: 180, taxRatePercent: 0 },
+        { name: 'Wire, 1.5 mm (metre)', quantity: 10, unitPrice: 25, taxRatePercent: 0 },
+        { name: 'Fitting charge (labour)', quantity: 1, unitPrice: 300, taxRatePercent: 0 },
+      ],
+      notes: 'Thank you! Paid by UPI.',
+    },
+    taxNote:
+      "A business that is not GST-registered must not charge GST or show a GSTIN on its bills. If you register later, add your GSTIN to your wbill profile and set a rate on each item — the same bill becomes a GST bill.",
+    commonMistakes: [
+      'Mixing material and labour into one line, so the customer cannot see what they paid for',
+      'Charging "GST" without being registered — that is not allowed',
+      'No bill number, so you cannot find the bill again later',
+      'No phone number on the bill, so the customer cannot call you back for more work',
+    ],
+    faq: [
+      {
+        question: 'Is a bill without GST a valid bill?',
+        answer: "Yes. If you're not GST-registered, a simple bill is the correct bill to give.",
+      },
+      {
+        question: 'Can I put items and labour on one bill?',
+        answer: 'Yes, and you should — each on its own line, so the customer sees both.',
+      },
+      {
+        question: 'Who can use this format?',
+        answer:
+          'Any small shop or service business — kirana, hardware, clothing, salon, tailor, mechanic, painter, carpenter, electrician, plumber and more.',
+      },
+      {
+        question: 'Can wbill make this bill for me?',
+        answer: 'Yes. Leave tax off and wbill makes a simple bill, as a PDF you can send on WhatsApp.',
+      },
+    ],
+  },
+  {
     slug: 'electrician',
+    group: 'service',
     title: 'Bill Format for Electricians',
     description: 'What to put on a bill for wiring, repairs, and installations — with a worked example and the mistakes that come up most.',
     audience: 'Electricians & electrical contractors',
@@ -115,6 +231,7 @@ export const invoiceFormatGuides: InvoiceFormatGuide[] = [
   },
   {
     slug: 'plumber',
+    group: 'service',
     title: 'Bill Format for Plumbers',
     description: 'What a plumbing bill needs — repairs, installations, and call-outs — with a worked example.',
     audience: 'Plumbers & plumbing contractors',
@@ -169,6 +286,7 @@ export const invoiceFormatGuides: InvoiceFormatGuide[] = [
   },
   {
     slug: 'ac-service',
+    group: 'service',
     title: 'Bill Format for AC & Appliance Service',
     description: 'What to put on a bill for AC service, repair, and installation — with a worked example.',
     audience: 'AC & appliance service providers',
@@ -223,6 +341,7 @@ export const invoiceFormatGuides: InvoiceFormatGuide[] = [
   },
   {
     slug: 'freelancer',
+    group: 'service',
     title: 'Invoice Format for Freelancers & Consultants',
     description: "What a freelance or consulting invoice needs to look professional and get paid on time — with a worked example.",
     audience: 'Freelancers, consultants & designers',

@@ -33,7 +33,7 @@ export default function Pricing() {
           kicker="Pricing"
           align="center"
           title="Simple monthly plans. Free for your customers, always."
-          lead="These are launch prices. While WBill is in early access every plan is free, and nothing is charged until we tell you first."
+          lead="These are launch prices. Every plan is free for now, and nothing is charged until we tell you first."
         />
 
         <ul className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -78,17 +78,17 @@ export default function Pricing() {
               </ul>
               {plan.recommended ? (
                 <MagneticLink
-                  href="#start"
+                  href="/login"
                   className="wb-cta wb-btn wb-btn-md mt-8 w-full bg-primary text-white"
                 >
-                  Join early access
+                  Get started
                 </MagneticLink>
               ) : (
                 <a
-                  href="#start"
+                  href="/login"
                   className="wb-btn wb-btn-md mt-8 w-full border border-border bg-surface text-ink transition-colors hover:border-ink/25"
                 >
-                  Join early access
+                  Get started
                 </a>
               )}
             </li>
@@ -105,7 +105,7 @@ export default function Pricing() {
           <h3 className="text-center text-2xl font-semibold tracking-tight text-ink">Compare plans</h3>
           <div className="mt-8 overflow-x-auto rounded-3xl border border-border bg-surface">
             <table className="w-full min-w-[40rem] text-sm">
-              <caption className="sr-only">Features included in each WBill plan</caption>
+              <caption className="sr-only">Features included in each wbill plan</caption>
               <thead>
                 <tr className="border-b border-border">
                   <th scope="col" className="w-[34%] px-5 py-4 text-left font-medium text-ink-soft">

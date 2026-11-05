@@ -10,9 +10,9 @@ const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-int
 
 export const metadata: Metadata = {
   metadataBase: new URL(brand.url),
-  title: { default: 'WBill: every purchase deserves a digital record', template: '%s | WBill' },
+  title: { default: 'wbill - Digital Billing App | Make Bills, Send on WhatsApp', template: '%s | wbill - Digital Billing App' },
   description:
-    'Replace paper bills with digital receipts. GST and non-GST bills on WhatsApp, customer purchase history and retail records for electronics, mobile and appliance stores in India.',
+    'Make a bill on your phone and send it as a PDF on WhatsApp. For kirana, hardware, mobile shops, salons, mechanics, plumbers and more. Free to get started.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '48x48' },
@@ -24,16 +24,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: brand.url,
-    siteName: 'WBill',
-    title: 'WBill: every purchase deserves a digital record',
+    siteName: 'wbill - Digital Billing App',
+    locale: 'en_IN',
+    title: 'wbill - Digital Billing App | Make Bills, Send on WhatsApp',
     description:
-      'Replace paper bills with digital receipts. GST and non-GST bills on WhatsApp, customer purchase history and retail records for electronics, mobile and appliance stores in India.',
+      'Make a bill on your phone and send it as a PDF on WhatsApp. For kirana, hardware, mobile shops, salons, mechanics, plumbers and more. Free to get started.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WBill: every purchase deserves a digital record',
-    description: 'Replace paper bills with digital receipts your customers keep.',
+    title: 'wbill - Digital Billing App | Make Bills, Send on WhatsApp',
+    description: 'Phone se bill banao, WhatsApp pe bhejo. Digital billing for every small shop and service business in India.',
     images: ['/og-image.png'],
   },
 };

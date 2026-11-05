@@ -3,7 +3,8 @@ import Icon from '@/components/Icon';
 import { delay } from '@/lib/motion';
 
 const suggestions = [
-  { href: '/', label: 'Home', detail: 'What wbill does, and how to get early access' },
+  { href: '/', label: 'Home', detail: 'What wbill does, and how to get started' },
+  { href: '/login', label: 'Login / Sign Up', detail: 'Phone number or Google account' },
   { href: '/invoice-format', label: 'Bill format guides', detail: 'Free, correct formats for Indian bills' },
   { href: '/support', label: 'Support', detail: 'Email us — we reply within one business day' },
 ];
