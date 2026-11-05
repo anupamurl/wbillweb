@@ -1,7 +1,15 @@
 'use client';
 
 import { getApp, getApps, initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
-import { browserLocalPersistence, connectAuthEmulator, getAuth, indexedDBLocalPersistence, initializeAuth, type Auth } from 'firebase/auth';
+import {
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  connectAuthEmulator,
+  getAuth,
+  indexedDBLocalPersistence,
+  initializeAuth,
+  type Auth,
+} from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore';
 
 /**
@@ -53,8 +61,14 @@ export function firebaseAuth(): Auth {
   const a = firebaseApp();
   // IndexedDB first, localStorage as fallback: the session survives refreshes
   // and browser restarts, and Firebase refreshes the 1-hour ID token itself.
+  // initializeAuth, unlike getAuth, ships no popup/redirect support unless
+  // it is passed in — without it Google sign-in (signInWithPopup,
+  // linkWithPopup, reauthenticateWithPopup) fails with auth/argument-error.
   try {
-    auth = initializeAuth(a, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] });
+    auth = initializeAuth(a, {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
   } catch {
     auth = getAuth(a);
   }

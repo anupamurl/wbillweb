@@ -1,19 +1,28 @@
 /**
- * Launch pricing. Prices are fixed by the product brief; which capability
- * sits in which plan is a working draft — edit it here and both the plan
- * cards and the comparison table follow.
+ * Plans and prices. Prices and plan names are fixed by the product brief;
+ * which capability sits in which plan is a working draft — edit it here
+ * and the plan cards, the comparison table and the FAQ all follow.
  *
- * There is no subscription or payment system yet, so the page takes no
- * payment and offers no yearly billing: every plan CTA leads to sign up.
+ * There is no subscription or payment system yet. No plan is charged,
+ * every plan CTA leads to sign-up, and we will tell users before anything
+ * is ever charged.
+ *
+ * Availability is stated per capability, matching what is actually built:
+ *   true    — available now
+ *   'app'   — built into the WBill mobile app, which is coming to the
+ *             App Store and Google Play
+ *   'soon'  — planned, not built yet
+ *   false   — not in this plan
+ *   string  — a short literal value shown as-is
  */
-export type Cell = boolean | 'soon' | string;
+export type Cell = boolean | 'app' | 'soon' | string;
 
 export type Plan = {
   id: 'free' | 'starter' | 'business' | 'pro';
   name: string;
   price: number;
   blurb: string;
-  highlights: Array<{ label: string; soon?: boolean }>;
+  highlights: Array<{ label: string; status?: 'app' | 'soon' }>;
   recommended?: boolean;
 };
 
@@ -22,30 +31,46 @@ export const plans: Plan[] = [
     id: 'free',
     name: 'Free',
     price: 0,
-    blurb: 'Try digital bills for your shop or your work.',
-    highlights: [{ label: 'GST and non-GST bills' }, { label: 'PDF and WhatsApp sharing' }, { label: 'Customer records' }],
+    blurb: 'Everything you need to replace the paper bill book.',
+    highlights: [
+      { label: 'Digital bills with automatic numbering' },
+      { label: 'Customer records and bill history' },
+      { label: 'PDF bills shared on WhatsApp', status: 'app' },
+    ],
   },
   {
     id: 'starter',
     name: 'Starter',
     price: 99,
-    blurb: 'For a business moving off the paper bill book.',
-    highlights: [{ label: 'Everything in Free' }, { label: 'Saved item and service list' }, { label: 'Sales analytics: totals' }],
+    blurb: 'For businesses ready to see their numbers.',
+    highlights: [
+      { label: 'Everything in Free' },
+      { label: 'Sales totals and bill count' },
+      { label: 'Saved item list', status: 'soon' },
+    ],
   },
   {
     id: 'business',
     name: 'Business',
     price: 249,
-    blurb: 'For growing shops and service businesses.',
-    highlights: [{ label: 'Everything in Starter' }, { label: 'Order and job tracking', soon: true }, { label: 'Warranty tracking (phone & electronics)', soon: true }],
+    blurb: 'For growing businesses that keep records beyond the bill.',
+    highlights: [
+      { label: 'Everything in Starter' },
+      { label: 'Order tracking', status: 'soon' },
+      { label: 'Warranty records', status: 'soon' },
+    ],
     recommended: true,
   },
   {
     id: 'pro',
     name: 'Pro',
     price: 499,
-    blurb: 'For busy businesses that live by the numbers.',
-    highlights: [{ label: 'Everything in Business' }, { label: 'Sales analytics: trends', soon: true }, { label: 'Priority support' }],
+    blurb: 'For busy businesses that run on insight.',
+    highlights: [
+      { label: 'Everything in Business' },
+      { label: 'Sales trends and top customers' },
+      { label: 'Priority support' },
+    ],
   },
 ];
 
@@ -53,31 +78,33 @@ export const comparison: Array<{ group: string; rows: Array<{ label: string; cel
   {
     group: 'Billing',
     rows: [
-      { label: 'GST and non-GST bills', cells: [true, true, true, true] },
-      { label: 'Branded PDF bills', cells: [true, true, true, true] },
-      { label: 'Share on WhatsApp', cells: [true, true, true, true] },
-      { label: 'Paid, pending and overdue status', cells: [true, true, true, true] },
+      { label: 'Digital bills with items, quantity and price', cells: [true, true, true, true] },
+      { label: 'Automatic, sequential bill numbers', cells: [true, true, true, true] },
+      { label: 'PDF bill with your business details', cells: ['app', 'app', 'app', 'app'] },
+      { label: 'Share bills on WhatsApp', cells: ['app', 'app', 'app', 'app'] },
+      { label: 'Tax and discount lines', cells: ['soon', 'soon', 'soon', 'soon'] },
+      { label: 'Paid and pending status', cells: ['soon', 'soon', 'soon', 'soon'] },
     ],
   },
   {
     group: 'Records',
     rows: [
-      { label: 'Customer records and bill search', cells: [true, true, true, true] },
-      { label: 'Saved item and service list', cells: [false, true, true, true] },
-      { label: 'Warranty tracking', cells: [false, false, 'soon', 'soon'] },
-      { label: 'Order and job tracking', cells: [false, false, 'soon', 'soon'] },
+      { label: 'Customer records and purchase history', cells: [true, true, true, true] },
+      { label: 'Saved item list', cells: [false, 'soon', 'soon', 'soon'] },
+      { label: 'Order tracking', cells: [false, false, 'soon', 'soon'] },
+      { label: 'Warranty records', cells: [false, false, 'soon', 'soon'] },
     ],
   },
   {
     group: 'Insight',
     rows: [
-      { label: 'Sales analytics: totals and bill count', cells: [false, true, true, true] },
-      { label: 'Sales analytics: trends and top items', cells: [false, false, false, 'soon'] },
+      { label: 'Sales totals and bill count', cells: [false, true, true, true] },
+      { label: 'Sales trends and top customers', cells: [false, false, false, true] },
       { label: 'Priority support', cells: [false, false, false, true] },
     ],
   },
   {
     group: 'For your customers',
-    rows: [{ label: 'Digital receipt access', cells: ['Always free', 'Always free', 'Always free', 'Always free'] }],
+    rows: [{ label: 'Receiving bills from you', cells: ['Always free', 'Always free', 'Always free', 'Always free'] }],
   },
 ];

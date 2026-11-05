@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useDashboard } from '@/lib/DashboardContext';
 import EmptyState from '@/components/dashboard/EmptyState';
@@ -54,7 +55,12 @@ export default function CustomersPage() {
                 {filtered.map((c) => (
                   <tr key={c.key} className="transition-colors hover:bg-ink/[0.02]">
                     <td className="px-5 py-3.5">
-                      <p className="font-medium text-ink">{c.name || 'Walk-in customer'}</p>
+                      <Link
+                        href={`/dashboard/bills/?q=${encodeURIComponent(c.phone || c.name)}`}
+                        className="font-medium text-ink hover:text-primary hover:underline"
+                      >
+                        {c.name || 'Walk-in customer'}
+                      </Link>
                       <p className="text-xs text-ink-soft">{formatPhone(c.phone)}</p>
                     </td>
                     <td className="px-5 py-3.5 text-right tabular-nums text-ink-soft">{c.billCount}</td>

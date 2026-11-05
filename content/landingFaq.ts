@@ -1,54 +1,46 @@
 import type { FaqItem } from '@/components/Faq';
+import { plans } from './pricing';
+
+const priceList = plans.map((plan) => `${plan.name} at ₹${plan.price}`).join(', ').replace(/, ([^,]*)$/, ' and $1');
 
 export const landingFaq: FaqItem[] = [
   {
-    question: 'Is wbill for my type of business?',
+    question: 'What is WBill?',
     answer:
-      'If you give your customers a bill, yes. wbill is for every small shop and service business in India — kirana and general stores, hardware, mobile and electronics shops, clothing shops, salons, tailors, mechanics, electricians, plumbers, painters and more.',
+      'WBill is a digital billing and purchase-record platform. Businesses use it to create bills, share them with customers digitally and keep every purchase organised — instead of relying on paper bills that fade and get lost.',
   },
   {
-    question: 'Can I add labour or service charges?',
+    question: 'Who can use WBill?',
     answer:
-      'Yes. One bill can have items with quantity and rate, plus a labour, fitting or service charge and a discount. That is how most real bills look, at a shop counter or after a job.',
+      'Any business that gives its customers a bill. WBill isn’t built for one industry or one kind of shop — if you sell products, services or both, it works the same way. Customers don’t need an account to receive bills.',
   },
   {
-    question: 'Do I need a GST number?',
+    question: 'How do digital bills work?',
     answer:
-      'No. Make a simple bill without GST. If you have a GSTIN, add it to your business profile and set a tax rate on each item to make a GST bill. For returns and compliance advice, talk to your tax professional.',
+      'You enter the customer’s mobile number and what they bought, with quantity and price. WBill totals it, gives it the next bill number and saves it. The bill is then filed under that customer, so you can find it again at any time.',
   },
   {
-    question: 'Do my customers need the wbill app?',
+    question: 'Can bills be shared through WhatsApp?',
     answer:
-      'No. Your customer gets the bill as a PDF on WhatsApp and opens it like any other file. Access to their bills is always free.',
+      'Yes, from the WBill mobile app: share the bill as a PDF on WhatsApp, or open a WhatsApp chat with the customer with the bill details typed in. The mobile app is coming to the App Store and Google Play. On the web dashboard today you can create, view and organise bills.',
   },
   {
-    question: 'Is it available in Hindi?',
+    question: 'Can customers access their purchase records?',
     answer:
-      'The app is in English at launch. Tell us your language from your dashboard — it helps us decide which Indian languages to add first.',
+      'Customers receive each bill as a PDF they can keep, forward or print, and it stays in their chat. A dedicated purchase history for customers is on our roadmap but isn’t available yet — we’ll announce it when it is.',
   },
   {
-    question: 'Can I record serial numbers, IMEI and warranties?',
+    question: 'What happens to my business data?',
     answer:
-      'Yes, for phone, electronics and appliance shops: at launch you can write a serial number or IMEI in the item description, and it appears on the bill. Dedicated warranty tracking, with expiry reminders, is coming later.',
+      'Your business, customer and bill data belongs to you. It’s stored securely, never sold and never used for advertising. You can ask us to export or delete it at any time — our privacy policy has the details.',
   },
   {
-    question: 'What does it cost?',
-    answer:
-      'wbill is free to get started. At launch the plans are Free at ₹0, Starter at ₹99, Business at ₹249 and Pro at ₹499 a month. We will tell you before anything is charged.',
+    question: 'What plans are available?',
+    answer: `WBill is free to get started. The plans are ${priceList} a month. Paid plans aren’t billed yet, no card is needed, and we’ll tell you before anything is ever charged.`,
   },
   {
-    question: 'Who owns my data?',
+    question: 'How can I get support?',
     answer:
-      'You do. Your customers, your bills and your business details are yours, and you can ask us to delete them at any time. Our privacy policy has the details.',
-  },
-  {
-    question: 'Does it work without an internet connection?',
-    answer:
-      'wbill needs an internet connection to create and send a bill, because everything you save is backed up online the moment you save it.',
-  },
-  {
-    question: 'When can I start?',
-    answer:
-      'Right now — sign up free on this website with your phone number or Google account and make your first bill from your dashboard. The mobile app is coming soon to the App Store and Play Store.',
+      'Email support@wbill.app and a person will reply, usually within one business day. The support page also answers the most common questions about signing in, bills and your data.',
   },
 ];

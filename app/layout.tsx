@@ -1,18 +1,22 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { brand } from '@/lib/brand';
+import { site } from '@/lib/site';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import OrganizationJsonLd from '@/components/OrganizationJsonLd';
+import RevealObserver from '@/components/site/RevealObserver';
+import SiteChrome from '@/components/site/SiteChrome';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
+const geist = Geist({ subsets: ['latin'], display: 'swap', variable: '--font-geist' });
+const geistMono = Geist_Mono({ subsets: ['latin'], display: 'swap', variable: '--font-geist-mono', weight: ['400', '500'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(brand.url),
-  title: { default: 'wbill - Digital Billing App | Make Bills, Send on WhatsApp', template: '%s | wbill - Digital Billing App' },
-  description:
-    'Make a bill on your phone and send it as a PDF on WhatsApp. For kirana, hardware, mobile shops, salons, mechanics, plumbers and more. Free to get started.',
+  title: { default: site.defaultTitle, template: `%s | ${site.name}` },
+  description: site.description,
+  applicationName: site.name,
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '48x48' },
@@ -24,36 +28,44 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: brand.url,
-    siteName: 'wbill - Digital Billing App',
+    siteName: site.name,
     locale: 'en_IN',
-    title: 'wbill - Digital Billing App | Make Bills, Send on WhatsApp',
-    description:
-      'Make a bill on your phone and send it as a PDF on WhatsApp. For kirana, hardware, mobile shops, salons, mechanics, plumbers and more. Free to get started.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    title: site.defaultTitle,
+    description: site.description,
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'WBill — digital bills and purchase records' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'wbill - Digital Billing App | Make Bills, Send on WhatsApp',
-    description: 'Phone se bill banao, WhatsApp pe bhejo. Digital billing for every small shop and service business in India.',
+    title: site.defaultTitle,
+    description: site.description,
     images: ['/og-image.png'],
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: brand.colors.light.primary },
-    { media: '(prefers-color-scheme: dark)', color: brand.colors.dark.background },
+    { media: '(prefers-color-scheme: light)', color: '#FAFAF7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C0D10' },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} scroll-pt-20`}>
-      <body className="bg-background font-sans text-ink antialiased">
+    <html lang="en" className={`${geist.variable} ${geistMono.variable} scroll-pt-20`}>
+      <body className="bg-canvas font-sans text-ink antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[60] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-canvas"
+        >
+          Skip to content
+        </a>
         <OrganizationJsonLd />
+        <RevealObserver />
         <Header />
-        {children}
-        <Footer />
+        <div id="main">{children}</div>
+        <SiteChrome>
+          <Footer />
+        </SiteChrome>
       </body>
     </html>
   );

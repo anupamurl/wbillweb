@@ -3,112 +3,79 @@ import { delay } from '@/lib/motion';
 
 /**
  * Availability of a capability, stated plainly wherever it is shown.
- * "ready"   — built and shipping with the app at launch.
- * "partial" — some of it is built; the tag's label says which part.
+ * "live"    — available now, on the web dashboard.
+ * "app"     — built into the WBill mobile app (coming to the App Store and Google Play).
  * "planned" — on the roadmap, not built yet.
  */
-export type Availability = 'ready' | 'partial' | 'planned';
+export type Availability = 'live' | 'app' | 'planned';
 
 const tagStyles: Record<Availability, string> = {
-  ready: 'border-success/25 bg-success/10 text-success',
-  partial: 'border-primary/25 bg-primary/10 text-primary',
-  planned: 'border-violet/25 bg-violet/10 text-violet',
+  live: 'text-success',
+  app: 'text-primary',
+  planned: 'text-ink-faint',
 };
 
-const tagDefaults: Record<Availability, string> = {
-  ready: 'Ready at launch',
-  partial: 'Partly built',
-  planned: 'Coming later',
+export const availabilityLabel: Record<Availability, string> = {
+  live: 'Available now',
+  app: 'In the mobile app',
+  planned: 'Planned',
 };
 
-export function StatusTag({ status }: { status: Availability }) {
+export function StatusTag({ status, className = '' }: { status: Availability; className?: string }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] font-medium ${tagStyles[status]}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-[0.7rem] font-medium leading-none ${className}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
-      {tagDefaults[status]}
+      <span className={`h-1.5 w-1.5 rounded-full bg-current ${tagStyles[status]}`} aria-hidden="true" />
+      <span className="text-ink-soft">{availabilityLabel[status]}</span>
     </span>
   );
 }
 
-/** Every mockup on the page carries this so sample numbers are never read as real ones. */
+/** Every mockup carries this so sample numbers are never read as real ones. */
 export function DemoBadge({ className = '' }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md border border-dashed border-ink-soft/40 bg-surface/80 px-2 py-0.5 text-[0.65rem] font-medium text-ink-soft ${className}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-dashed border-ink-faint/60 bg-surface/90 px-[0.75em] py-[0.2em] font-mono text-[0.6em] font-medium uppercase tracking-[0.08em] text-ink-soft backdrop-blur ${className}`}
     >
       Demo data
     </span>
   );
 }
 
+export function Eyebrow({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <p className={`wb-eyebrow ${className}`}>{children}</p>;
+}
+
 export function SectionIntro({
-  kicker,
+  eyebrow,
   title,
   lead,
   align = 'left',
+  id,
   children,
+  className = '',
 }: {
-  kicker?: string;
+  eyebrow?: string;
   title: ReactNode;
   lead?: ReactNode;
   align?: 'left' | 'center';
+  id?: string;
   children?: ReactNode;
+  className?: string;
 }) {
   const centered = align === 'center';
   return (
-    <div className={centered ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
-      {kicker && (
-        <p className="wb-reveal text-sm font-medium text-primary">{kicker}</p>
-      )}
-      <h2
-        className="wb-reveal wb-display mt-3 text-[2.25rem] text-ink sm:text-5xl"
-        style={delay(60)}
-      >
+    <div className={`${centered ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'} ${className}`}>
+      {eyebrow && <Eyebrow className="wb-reveal">{eyebrow}</Eyebrow>}
+      <h2 id={id} className="wb-reveal wb-h2 mt-5 text-ink" style={delay(60)}>
         {title}
       </h2>
       {lead && (
-        <p
-          className="wb-reveal mt-5 text-base leading-relaxed text-ink-soft sm:text-lg"
-          style={delay(120)}
-        >
+        <p className={`wb-reveal wb-lead mt-6 ${centered ? 'mx-auto max-w-2xl' : 'max-w-2xl'}`} style={delay(120)}>
           {lead}
         </p>
       )}
-      {children}
-    </div>
-  );
-}
-
-/** Sub-section heading: one size everywhere below a section title. */
-export const subHeading = 'wb-display text-3xl text-ink sm:text-[2.5rem]';
-
-/** A window frame for product mockups. */
-export function AppWindow({
-  title,
-  children,
-  className = '',
-  aside,
-}: {
-  title: string;
-  children: ReactNode;
-  className?: string;
-  aside?: ReactNode;
-}) {
-  return (
-    <div
-      className={`wb-shadow overflow-hidden rounded-2xl border border-border ${className.includes("bg-") ? "" : "bg-surface"} ${className}`}
-    >
-      <div className="flex items-center justify-between gap-3 border-b border-border bg-canvas/70 px-4 py-2.5">
-        <div className="flex items-center gap-1.5" aria-hidden="true">
-          <span className="h-2.5 w-2.5 rounded-full bg-border" />
-          <span className="h-2.5 w-2.5 rounded-full bg-border" />
-          <span className="h-2.5 w-2.5 rounded-full bg-border" />
-        </div>
-        <p className="truncate text-xs font-medium text-ink-soft">{title}</p>
-        <div className="flex items-center gap-2">{aside ?? <DemoBadge />}</div>
-      </div>
       {children}
     </div>
   );

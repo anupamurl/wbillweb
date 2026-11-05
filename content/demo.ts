@@ -1,93 +1,100 @@
 /**
- * Demonstration data for the landing page mockups. None of this is a real
- * business, customer or result — every component that renders it shows a
- * "Demo data" badge. GST is computed per line, as the app computes it.
+ * Demonstration data for the product mockups on the marketing site.
+ *
+ * None of this is a real business, customer or result. Every mockup that
+ * renders it carries a visible "Demo data" label. The shape follows the
+ * real product exactly: a bill is a customer (name + phone), line items
+ * (name, quantity, unit price) and a total, numbered WB-0001 onwards; the
+ * share message is the one the WBill app writes.
  */
 
-export const demoShop = {
-  name: 'Sharma Hardware Store',
-  area: 'Malviya Nagar, Jaipur',
-  /** No GSTIN: the hero shows a plain (non-GST) bill — digital billing first, GST optional. */
-  gstin: '',
+export const demoBusiness = {
+  name: 'Meridian Store',
+  place: 'Pune',
+  phone: '+91 98220 ••••5',
 };
 
 export const demoCustomer = {
-  name: 'Ramesh Kumar',
-  phone: '+91 98••• ••210',
+  name: 'Priya Sharma',
+  phone: '98765 •••10',
 };
 
-export const demoInvoiceNumber = 'BILL-0142';
-export const demoInvoiceDate = '3 Nov 2026';
+export type DemoLine = { name: string; qty: number; price: number };
 
-/** A "mixed" bill: shop items and a labour line on one bill, so shops and trades both see themselves. */
-const items = [
-  { name: 'MCB switch, 16A', detail: '2 × ₹180', qty: 2, rate: 180, taxRatePercent: 0 },
-  { name: 'Wire, 1.5 mm', detail: '10 metre × ₹25', qty: 10, rate: 25, taxRatePercent: 0 },
-  { name: 'Fitting charge (labour)', detail: 'Service', qty: 1, rate: 300, taxRatePercent: 0 },
+export const demoLines: DemoLine[] = [
+  { name: 'Ceramic dinner set', qty: 1, price: 1450 },
+  { name: 'Cotton bath towel', qty: 2, price: 380 },
+  { name: 'Gift wrapping', qty: 1, price: 50 },
 ];
 
-export const demoDiscount = 30;
-
-export const demoInvoice = (() => {
-  const rows = items.map((item) => {
-    const lineTotal = item.qty * item.rate;
-    return { ...item, lineTotal, taxAmount: Math.round((lineTotal * item.taxRatePercent) / 100) };
-  });
-  const subtotal = rows.reduce((sum, row) => sum + row.lineTotal, 0);
-  const tax = rows.reduce((sum, row) => sum + row.taxAmount, 0);
-  return { rows, subtotal, discount: demoDiscount, tax, total: subtotal - demoDiscount + tax };
-})();
-
-/** Warranty records are measured against this fixed date, so the page renders the same everywhere. */
-export const demoToday = new Date('2026-11-03T00:00:00Z');
-
-export const demoWarranties = [
-  { product: '55-inch 4K smart LED TV', serial: 'SN-TV55-22910087', purchased: '2026-03-12', months: 24 },
-  { product: 'Double-door refrigerator 340 L', serial: 'SN-RF340-55102', purchased: '2025-12-02', months: 12 },
-  { product: 'Front-load washing machine 8 kg', serial: 'SN-WM8-90311', purchased: '2024-09-18', months: 24 },
-];
-
-export function warrantyState(purchased: string, months: number) {
-  const start = new Date(`${purchased}T00:00:00Z`);
-  const end = new Date(start);
-  end.setUTCMonth(end.getUTCMonth() + months);
-  const total = end.getTime() - start.getTime();
-  const elapsed = Math.min(Math.max(demoToday.getTime() - start.getTime(), 0), total);
-  const daysLeft = Math.round((end.getTime() - demoToday.getTime()) / 86_400_000);
-  const status: 'active' | 'expiring' | 'expired' =
-    daysLeft < 0 ? 'expired' : daysLeft <= 60 ? 'expiring' : 'active';
-  return { start, end, progress: elapsed / total, daysLeft, status };
-}
-
-export function formatDate(date: Date) {
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-}
-
-export const demoRevenue = [
-  { label: 'Dec', value: 142000 },
-  { label: 'Jan', value: 128000 },
-  { label: 'Feb', value: 119000 },
-  { label: 'Mar', value: 151000 },
-  { label: 'Apr', value: 163000 },
-  { label: 'May', value: 171000 },
-  { label: 'Jun', value: 158000 },
-  { label: 'Jul', value: 139000 },
-  { label: 'Aug', value: 147000 },
-  { label: 'Sep', value: 156000 },
-  { label: 'Oct', value: 198000 },
-  { label: 'Nov', value: 176400 },
-];
-
-export const demoTopProducts = [
-  { name: 'Electrical items', share: 0.32 },
-  { name: 'Plumbing items', share: 0.24 },
-  { name: 'Paint and tools', share: 0.19 },
-  { name: 'Fitting and labour', share: 0.15 },
-];
-
-export const demoKpis = {
-  revenue: 176400,
-  bills: 312,
-  repeatPercent: 41,
-  averageBill: 565,
+export const demoBill = {
+  number: 'WB-0142',
+  date: '3 Nov 2026',
+  time: '6:42 pm',
+  lines: demoLines,
+  total: demoLines.reduce((sum, line) => sum + line.qty * line.price, 0),
 };
+
+/** Mirrors S.shareMessage in the mobile app. */
+export const demoShareText = (total: string) =>
+  [`Thank you for shopping at ${demoBusiness.name}.`, `Bill ${demoBill.number} · Total ${total}`];
+
+/** A customer's history as the business sees it in WBill: bills over time. */
+export const demoHistory = [
+  { number: 'WB-0142', date: '3 Nov 2026', items: 3, total: 2260 },
+  { number: 'WB-0117', date: '18 Oct 2026', items: 1, total: 899 },
+  { number: 'WB-0094', date: '2 Oct 2026', items: 4, total: 3120 },
+  { number: 'WB-0061', date: '9 Sep 2026', items: 2, total: 640 },
+  { number: 'WB-0023', date: '14 Aug 2026', items: 1, total: 1999 },
+];
+
+export const demoRecentBills = [
+  { number: 'WB-0142', customer: 'Priya Sharma', items: 3, total: 2260, when: 'Today' },
+  { number: 'WB-0141', customer: 'Arjun Mehta', items: 1, total: 499, when: 'Today' },
+  { number: 'WB-0140', customer: 'Fatima Khan', items: 5, total: 4385, when: 'Yesterday' },
+  { number: 'WB-0139', customer: 'Rahul Verma', items: 2, total: 1180, when: 'Yesterday' },
+];
+
+/** Six months of revenue for the insights mockup (₹). */
+export const demoMonths = [
+  { label: 'Jun', revenue: 84200, bills: 61 },
+  { label: 'Jul', revenue: 91800, bills: 66 },
+  { label: 'Aug', revenue: 88400, bills: 63 },
+  { label: 'Sep', revenue: 102600, bills: 74 },
+  { label: 'Oct', revenue: 126900, bills: 88 },
+  { label: 'Nov', revenue: 118300, bills: 79 },
+];
+
+export const demoWeek = [
+  { label: 'Mon', bills: 9 },
+  { label: 'Tue', bills: 12 },
+  { label: 'Wed', bills: 8 },
+  { label: 'Thu', bills: 14 },
+  { label: 'Fri', bills: 17 },
+  { label: 'Sat', bills: 23 },
+  { label: 'Sun', bills: 11 },
+];
+
+export const demoTopCustomers = [
+  { name: 'Fatima Khan', bills: 9, spent: 18420 },
+  { name: 'Priya Sharma', bills: 5, spent: 8918 },
+  { name: 'Arjun Mehta', bills: 7, spent: 7640 },
+  { name: 'Rahul Verma', bills: 4, spent: 5210 },
+];
+
+export const demoOverview = {
+  bills: 431,
+  customers: 186,
+  revenue: 612200,
+  billsThisMonth: 79,
+  revenueThisMonth: 118300,
+};
+
+export function inr(value: number, paise = false) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: paise ? 2 : 0,
+    maximumFractionDigits: paise ? 2 : 0,
+  }).format(value);
+}

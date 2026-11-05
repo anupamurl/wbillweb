@@ -86,20 +86,15 @@ export default function InvoiceFormatHub() {
           );
         })}
 
-        <div className="wb-reveal mt-14 rounded-2xl border border-primary/25 bg-surface-variant/60 p-7 sm:p-9">
-          <h2 className="text-xl font-semibold tracking-[-0.01em] text-text-primary">
-            Or stop formatting bills by hand
-          </h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-text-secondary">
-            wbill fills in every field in these guides for you, generates the PDF, and sends it on
-            WhatsApp — from your phone, in seconds.
+        <div className="wb-reveal mt-14 rounded-[1.75rem] bg-ink p-8 text-canvas sm:p-10">
+          <h2 className="text-xl font-semibold tracking-[-0.02em]">Or stop formatting bills by hand</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-canvas/65">
+            With WBill you add the customer and items, and the bill is numbered, dated, totalled and kept in your
+            records automatically.
           </p>
-          <Link
-            href="/login"
-            className="group mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25"
-          >
+          <Link href="/signup/" className="wb-btn wb-btn-md wb-btn-primary group mt-6">
             Get started free
-            <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Icon name="arrow" className="wb-arrow h-4 w-4" />
           </Link>
         </div>
       </main>

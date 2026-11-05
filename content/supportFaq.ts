@@ -4,12 +4,22 @@ export const supportFaq: FaqItem[] = [
   {
     question: "I didn't receive my OTP code",
     answer:
-      "Check that your number is entered correctly, including the country code, and wait a minute — SMS delivery can lag. If it still hasn't arrived, email us and we'll look into it.",
+      "Check that your number is entered correctly, including the country code, and wait a minute — SMS delivery can lag. You can also continue with Google instead. If the code still hasn't arrived, email us and we'll look into it.",
+  },
+  {
+    question: 'Can I use both my phone number and Google to sign in?',
+    answer:
+      'Yes. Once you are signed in, open Profile in your dashboard to link the other sign-in method to the same account.',
+  },
+  {
+    question: 'Where do I find my bills?',
+    answer:
+      'Sign in and open Bills in your dashboard. Every bill is listed newest first, and Customers shows each customer with their purchase history.',
   },
   {
     question: 'How do I delete my account and data?',
     answer:
-      "Email us from the phone number linked to your account and we'll delete your data within the timeframe described in our privacy policy.",
+      "You can delete your account from Profile in your dashboard, or email us from the phone number linked to your account and we'll delete your data within the timeframe described in our privacy policy.",
   },
   {
     question: 'I found a bug',

@@ -7,6 +7,9 @@ export const dynamic = 'force-static';
 
 const staticRoutes: Array<{ path: string; changeFrequency: 'weekly' | 'monthly' | 'yearly'; priority: number }> = [
   { path: '/', changeFrequency: 'weekly', priority: 1 },
+  { path: '/pricing/', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/about/', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/signup/', changeFrequency: 'yearly', priority: 0.6 },
   { path: '/invoice-format/', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/privacy/', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms/', changeFrequency: 'yearly', priority: 0.3 },

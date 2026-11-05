@@ -1,38 +1,35 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import WbillMark from './WbillMark';
 import Icon from './Icon';
 import { signOutEverywhere, useSession } from '@/lib/session';
-
-const navLinks = [
-  { href: '/#product', label: 'Product' },
-  { href: '/#features', label: 'Features' },
-  { href: '/#industries', label: 'Who it’s for' },
-  { href: '/#pricing', label: 'Pricing' },
-  { href: '/#faq', label: 'FAQ' },
-];
+import { primaryNav } from '@/lib/site';
 
 /**
- * The outer header keeps a fixed 64px box so nothing below it moves; only
- * the inner bar compacts, turns translucent and picks up a border on scroll.
+ * A fixed 64px bar: transparent over the page top, frosted once it scrolls.
  *
- * The site-wide session hook decides the one auth-dependent action: signed
- * out it's Login / Sign Up, signed in it's Dashboard + Logout. Marketing
- * pages never load Firebase unless this browser has signed in before.
+ * The one auth-dependent part is on the right. Signed out: Login and Get
+ * Started. Signed in: Dashboard and Logout. While Firebase is still
+ * deciding, the slot holds its width so nothing shifts. Marketing pages
+ * never load Firebase unless this browser has signed in before.
  */
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const pathname = usePathname();
   const session = useSession();
   const signedIn = session.status === 'signedIn';
+  const deciding = session.status === 'unknown';
 
   useEffect(() => {
     let frame = 0;
     const update = () => {
       frame = 0;
-      setScrolled(window.scrollY > 12);
+      setScrolled(window.scrollY > 8);
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -45,148 +42,133 @@ export default function Header() {
     };
   }, []);
 
+  useEffect(() => setOpen(false), [pathname]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+    };
   }, [open]);
 
-  const compact = scrolled || open;
+  async function logout() {
+    setOpen(false);
+    setSigningOut(true);
+    try {
+      await signOutEverywhere();
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
+  const isCurrent = (href: string) => !href.includes('#') && pathname?.startsWith(href.replace(/\/$/, ''));
 
   return (
-    <header className="sticky top-0 z-40 h-16">
-      <div
-        className={`mx-auto transition-all duration-300 ease-out ${
-          compact ? 'max-w-6xl px-2 pt-2 sm:px-4' : 'max-w-7xl px-0 pt-0'
-        }`}
-      >
-        <div
-          className={`border transition-all duration-300 ease-out ${
-            compact
-              ? 'rounded-2xl border-border bg-background/80 shadow-[0_8px_30px_-12px_rgb(10_22_51/0.18)] backdrop-blur-md backdrop-saturate-150'
-              : 'rounded-none border-transparent border-b-border/60 bg-background/80 backdrop-blur-md'
-          }`}
-        >
-          <div
-            className={`flex items-center justify-between px-4 transition-all duration-300 sm:px-6 ${
-              compact ? 'h-12' : 'h-16'
-            }`}
-          >
-            <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-              <WbillMark size={compact ? 26 : 30} />
-              <span className="text-[1.05rem] font-semibold tracking-[-0.02em] text-ink">wbill</span>
-            </Link>
+    <header className="sticky top-0 z-50 h-16">
+      <div className="wb-header-bar h-full" data-scrolled={scrolled} data-open={open}>
+        <div className="wb-container flex h-16 items-center justify-between gap-6">
+          <Link href="/" className="flex items-center gap-2.5 rounded-lg" aria-label="WBill home">
+            <WbillMark size={28} />
+            <span className="text-[1.08rem] font-semibold tracking-[-0.03em] text-ink">WBill</span>
+          </Link>
 
-            <nav aria-label="Primary" className="hidden items-center gap-1 text-sm lg:flex">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-lg px-3 py-1.5 text-ink-soft transition-colors hover:bg-ink/5 hover:text-ink"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </nav>
+          <nav aria-label="Primary" className="hidden items-center gap-0.5 lg:flex">
+            {primaryNav.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
+                className="rounded-full px-3.5 py-2 text-[0.9rem] text-ink-soft transition-colors hover:text-ink aria-[current=page]:text-ink"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <div className={`hidden items-center gap-1.5 sm:flex ${deciding ? 'invisible' : ''}`} aria-hidden={deciding || undefined}>
               {signedIn ? (
                 <>
-                  <Link
-                    href="/dashboard"
-                    className="wb-btn wb-btn-sm hidden border border-border bg-surface text-ink sm:inline-flex"
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => signOutEverywhere()}
-                    className="hidden rounded-lg px-3 py-1.5 text-sm text-ink-soft transition-colors hover:bg-ink/5 hover:text-ink sm:inline-flex"
-                  >
-                    Logout
+                  <button type="button" onClick={logout} disabled={signingOut} className="wb-btn wb-btn-sm wb-btn-ghost">
+                    {signingOut ? 'Logging out…' : 'Logout'}
                   </button>
+                  <Link href="/dashboard/" className="wb-btn wb-btn-sm wb-btn-ink group">
+                    Dashboard
+                    <Icon name="arrow" className="wb-arrow h-3.5 w-3.5" />
+                  </Link>
                 </>
               ) : (
-                <Link
-                  href="/login"
-                  className="wb-cta wb-btn wb-btn-sm hidden bg-primary text-white sm:inline-flex"
-                >
-                  Login / Sign Up
-                </Link>
-              )}
-              <button
-                type="button"
-                aria-expanded={open}
-                aria-controls="mobile-nav"
-                aria-label={open ? 'Close menu' : 'Open menu'}
-                onClick={() => setOpen((value) => !value)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface/70 text-ink lg:hidden"
-              >
-                <Icon
-                  name="menu"
-                  className={`absolute h-5 w-5 transition-all duration-300 ${open ? 'rotate-90 scale-50 opacity-0' : ''}`}
-                />
-                <Icon
-                  name="cross"
-                  className={`absolute h-5 w-5 transition-all duration-300 ${open ? '' : '-rotate-90 scale-50 opacity-0'}`}
-                />
-              </button>
-            </div>
-          </div>
-
-          <div id="mobile-nav" className="wb-sheet lg:hidden" data-open={open}>
-            <div>
-              <nav aria-label="Mobile" className="px-3 pb-3" inert={!open}>
-                <ul className="border-t border-border pt-2">
-                  {navLinks.map((link, index) => (
-                    <li
-                      key={link.href}
-                      className={`transition-all duration-300 ${open ? 'translate-y-0 opacity-100' : '-translate-y-1 opacity-0'}`}
-                      style={{ transitionDelay: open ? `${60 + index * 35}ms` : '0ms' }}
-                    >
-                      <a
-                        href={link.href}
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-between rounded-xl px-3 py-3 text-[0.95rem] text-ink transition-colors hover:bg-ink/5"
-                      >
-                        {link.label}
-                        <Icon name="arrow" className="h-4 w-4 text-ink-soft" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-                {signedIn ? (
-                  <div className="mt-2 flex flex-col gap-2">
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setOpen(false)}
-                      className="wb-btn wb-btn-md flex w-full border border-border bg-surface text-ink"
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOpen(false);
-                        void signOutEverywhere();
-                      }}
-                      className="wb-btn wb-btn-md flex w-full text-ink-soft"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    href="/login"
-                    onClick={() => setOpen(false)}
-                    className="wb-cta wb-btn wb-btn-md mt-2 flex w-full bg-primary text-white"
-                  >
-                    Login / Sign Up
+                <>
+                  <Link href="/login/" className="wb-btn wb-btn-sm wb-btn-ghost">
+                    Login
                   </Link>
-                )}
-              </nav>
+                  <Link href="/signup/" className="wb-btn wb-btn-sm wb-btn-primary group">
+                    Get Started
+                    <Icon name="arrow" className="wb-arrow h-3.5 w-3.5" />
+                  </Link>
+                </>
+              )}
             </div>
+            <button
+              type="button"
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              onClick={() => setOpen((value) => !value)}
+              className="relative -mr-2 flex h-11 w-11 items-center justify-center rounded-full text-ink lg:hidden"
+            >
+              <span className="relative block h-3 w-5" aria-hidden="true">
+                <span className={`absolute left-0 top-0 h-[1.5px] w-5 rounded bg-current transition-transform duration-300 ${open ? 'translate-y-[5.25px] rotate-45' : ''}`} />
+                <span className={`absolute bottom-0 left-0 h-[1.5px] w-5 rounded bg-current transition-transform duration-300 ${open ? '-translate-y-[5.25px] -rotate-45' : ''}`} />
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div id="mobile-nav" className="wb-sheet lg:hidden" data-open={open}>
+          <div>
+            <nav aria-label="Mobile" inert={!open} className="wb-container flex h-[calc(100dvh-4rem)] flex-col bg-canvas pb-8 pt-4">
+              <ul className="flex flex-col">
+                {primaryNav.map((link, index) => (
+                  <li
+                    key={link.href}
+                    className={`border-b border-line transition-all duration-500 ${open ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`}
+                    style={{ transitionDelay: open ? `${80 + index * 40}ms` : '0ms' }}
+                  >
+                    <Link href={link.href} onClick={() => setOpen(false)} className="flex items-center justify-between py-4 text-2xl font-medium tracking-[-0.03em] text-ink">
+                      {link.label}
+                      <Icon name="arrow" className="h-5 w-5 text-ink-faint" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto flex flex-col gap-2.5">
+                {signedIn ? (
+                  <>
+                    <Link href="/dashboard/" onClick={() => setOpen(false)} className="wb-btn wb-btn-lg wb-btn-ink w-full">
+                      Go to dashboard
+                    </Link>
+                    <button type="button" onClick={logout} disabled={signingOut} className="wb-btn wb-btn-lg wb-btn-secondary w-full">
+                      {signingOut ? 'Logging out…' : 'Logout'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/signup/" onClick={() => setOpen(false)} className="wb-btn wb-btn-lg wb-btn-primary w-full">
+                      Get Started
+                    </Link>
+                    <Link href="/login/" onClick={() => setOpen(false)} className="wb-btn wb-btn-lg wb-btn-secondary w-full">
+                      Login
+                    </Link>
+                  </>
+                )}
+              </div>
+            </nav>
           </div>
         </div>
       </div>

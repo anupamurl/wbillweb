@@ -97,7 +97,7 @@ function SampleBill({ bill }: { bill: BusinessPage['sampleBill'] }) {
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success">
           <Icon name="chat" className="h-3 w-3" />
         </span>
-        Sent as a PDF on WhatsApp. No GST on this sample — add it only if you&rsquo;re registered.
+        Sample bill. PDF and WhatsApp sharing are part of the WBill mobile app.
       </p>
     </div>
   );
@@ -116,15 +116,13 @@ export default function BusinessPageTemplate({ business }: { business: Business 
         <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1fr_1.05fr] lg:items-center">
           <div>
             <nav aria-label="Breadcrumb" className="text-sm text-ink-soft">
-              <Link href="/" className="hover:text-ink">wbill</Link>
-              <span className="mx-2 text-text-disabled">/</span>
-              <Link href="/#industries" className="hover:text-ink">Who it&rsquo;s for</Link>
+              <Link href="/" className="hover:text-ink">WBill</Link>
               <span className="mx-2 text-text-disabled">/</span>
               <span className="text-ink">{business.label}</span>
             </nav>
             <p className="wb-in mt-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
               <Icon name={business.icon} className="h-4 w-4" />
-              wbill - Digital Billing App
+              WBill
             </p>
             <h1 className="wb-in mt-3 text-4xl font-bold tracking-[-0.03em] text-ink sm:text-5xl" style={delay(60)}>
               {page.h1}
@@ -137,13 +135,13 @@ export default function BusinessPageTemplate({ business }: { business: Business 
             </p>
             <div className="wb-in mt-8 flex flex-col items-start gap-3" style={delay(200)}>
               <a
-                href="/login"
-                className="wb-cta wb-btn wb-btn-lg group bg-primary text-white"
+                href="/signup/"
+                className="wb-btn wb-btn-lg wb-btn-primary group"
               >
                 Get started free
                 <Icon name="arrow" className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </a>
-              <p className="text-xs text-ink-soft">Free to get started. Android and iOS app coming soon.</p>
+              <p className="text-xs text-ink-soft">Free to get started. Mobile app for iOS and Android coming soon.</p>
             </div>
           </div>
           <div className="wb-in-rise" style={delay(260)}>
@@ -155,7 +153,7 @@ export default function BusinessPageTemplate({ business }: { business: Business 
       <section className="border-b border-border bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
           <h2 className="text-2xl font-semibold tracking-[-0.02em] text-ink sm:text-3xl">
-            What a {business.label.toLowerCase()} bill needs — and how wbill does it
+            What a {business.label.toLowerCase()} bill needs
           </h2>
           <ul className="mt-10 grid gap-4 sm:grid-cols-2">
             {page.billNeeds.map((need, index) => (
@@ -205,7 +203,7 @@ export default function BusinessPageTemplate({ business }: { business: Business 
 
       <section>
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <h2 className="text-xl font-semibold tracking-[-0.01em] text-ink">wbill is also for</h2>
+          <h2 className="text-xl font-semibold tracking-[-0.01em] text-ink">WBill also works for</h2>
           <ul className="mt-6 flex flex-wrap gap-2">
             {others.map((other) => (
               <li key={other.slug}>

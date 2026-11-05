@@ -139,26 +139,16 @@ export default function GuideTemplate({ guide }: { guide: InvoiceFormatGuide }) 
         </ul>
       </section>
 
-      <section className="relative isolate mt-16 overflow-hidden rounded-2xl border border-primary/25 bg-surface-variant/60 px-6 py-10 text-center sm:px-10">
-        <div className="wb-aurora" aria-hidden="true">
-          <div className="wb-blob left-[10%] top-[-60%] h-64 w-64 bg-primary/20" />
-        </div>
-        <div className="relative">
-          <h2 className="text-xl font-semibold tracking-[-0.01em] text-text-primary sm:text-2xl">
-            Or let wbill build this bill for you
-          </h2>
-          <p className="mx-auto mt-2.5 max-w-md text-sm leading-relaxed text-text-secondary">
-            Every field above, filled in automatically, totalled correctly, and sent on WhatsApp in
-            seconds — from your phone.
-          </p>
-          <Link
-            href="/login"
-            className="group mt-7 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-primary/25"
-          >
-            Get started free
-            <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </div>
+      <section className="mt-16 rounded-[1.75rem] bg-ink px-6 py-12 text-center text-canvas sm:px-10">
+        <h2 className="text-xl font-semibold tracking-[-0.02em] sm:text-2xl">Make bills digitally with WBill</h2>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-canvas/65">
+          Add the customer and items, and WBill numbers, dates and totals the bill for you — then keeps it in
+          your records.
+        </p>
+        <Link href="/signup/" className="wb-btn wb-btn-md wb-btn-primary group mt-7">
+          Get started free
+          <Icon name="arrow" className="wb-arrow h-4 w-4" />
+        </Link>
       </section>
 
       <section className="mt-16">

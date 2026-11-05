@@ -132,6 +132,12 @@ export function describeAuthError(error: unknown): string {
       return 'Network error — check your connection and try again.';
     case 'auth/requires-recent-login':
       return "For your security, please verify it's you again before this.";
+    case 'auth/operation-not-allowed':
+      return 'This sign-in method isn’t enabled yet. Please use your phone number, or try again later.';
+    case 'auth/unauthorized-domain':
+      return 'Sign-in isn’t enabled for this website address yet. Please try again later.';
+    case 'auth/popup-blocked':
+      return 'Your browser blocked the Google sign-in window. Allow pop-ups for this site and try again.';
     case 'auth/quota-exceeded':
       return "We've hit today's SMS limit. Try again later or use Google sign-in.";
     default:

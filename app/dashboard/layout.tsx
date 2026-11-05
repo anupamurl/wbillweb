@@ -42,9 +42,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 }
 
 function DashboardGate({ children }: { children: React.ReactNode }) {
-  const { user, needsShopSetup, loading } = useDashboard();
+  const { user, needsShopSetup, loading, error } = useDashboard();
 
   if (needsShopSetup) return <ShopSetupForm user={user} />;
+
+  // A failed first load (permissions, network) would otherwise spin forever.
+  if (loading && error) {
+    return (
+      <DashboardShell user={user}>
+        <div role="alert" className="mx-auto max-w-md rounded-2xl border border-error/30 bg-error/5 p-6 text-center">
+          <p className="font-semibold text-ink">We couldn&rsquo;t load your account</p>
+          <p className="mt-2 text-sm text-ink-soft">{error}</p>
+          <button type="button" onClick={() => window.location.reload()} className="wb-btn wb-btn-md wb-btn-primary mt-5">
+            Try again
+          </button>
+        </div>
+      </DashboardShell>
+    );
+  }
 
   if (loading) {
     return (

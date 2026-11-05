@@ -1,15 +1,8 @@
-/** Country codes offered on the login form. India first and default. */
-export const countries = [
-  { code: 'IN', dial: '+91', name: 'India', digits: [10, 10] },
-  { code: 'AE', dial: '+971', name: 'UAE', digits: [9, 9] },
-  { code: 'SA', dial: '+966', name: 'Saudi Arabia', digits: [9, 9] },
-  { code: 'NP', dial: '+977', name: 'Nepal', digits: [10, 10] },
-  { code: 'BD', dial: '+880', name: 'Bangladesh', digits: [10, 10] },
-  { code: 'LK', dial: '+94', name: 'Sri Lanka', digits: [9, 9] },
-  { code: 'SG', dial: '+65', name: 'Singapore', digits: [8, 8] },
-  { code: 'GB', dial: '+44', name: 'United Kingdom', digits: [10, 10] },
-  { code: 'US', dial: '+1', name: 'USA / Canada', digits: [10, 10] },
-] as const;
+/**
+ * Phone sign-in is India-only: Firebase SMS is enabled for +91 alone, and
+ * bills store customers as 10-digit Indian mobiles.
+ */
+export const countries = [{ code: 'IN', dial: '+91', name: 'India', digits: [10, 10] }] as const;
 
 export type CountryCode = (typeof countries)[number]['code'];
 

@@ -4,7 +4,7 @@ import { brand } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How wbill collects, uses, and protects your data.',
+  description: 'How WBill collects, uses, and protects your data.',
   alternates: { canonical: `${brand.url}/privacy/` },
 };
 
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Overview</h2>
         <p>
-          wbill is a billing app for small businesses. This policy explains what we collect when
+          WBill is a digital billing and purchase-record platform for businesses. This policy explains what we collect when
           you use it, why we collect it, and how you can control it. We collect only what the app
           needs to work — nothing is sold, and nothing is collected for advertising.
         </p>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
         <h2>Your rights</h2>
         <p>
           You can ask us at any time to export your data, correct it, or delete it. Email{' '}
-          <a href={`mailto:${brand.email}`} className="text-primary underline">{brand.email}</a>{' '}
+          <a href={`mailto:${brand.email}`}>{brand.email}</a>{' '}
           from the address or phone number linked to your account and we&rsquo;ll act on it.
         </p>
       </section>
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Cookies and tracking</h2>
         <p>
-          This website does not use tracking cookies or third-party analytics. The wbill app does
+          This website does not use tracking cookies or third-party analytics. The WBill app does
           not track you across other apps or websites.
         </p>
       </section>
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
         <h2>Contact us</h2>
         <p>
           Questions about this policy or your data: email{' '}
-          <a href={`mailto:${brand.email}`} className="text-primary underline">{brand.email}</a>.
+          <a href={`mailto:${brand.email}`}>{brand.email}</a>.
         </p>
       </section>
     </LegalPage>

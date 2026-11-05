@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useDashboard } from '@/lib/DashboardContext';
 import EmptyState from '@/components/dashboard/EmptyState';
 import { formatPaise } from '@/lib/currency';
@@ -10,10 +11,19 @@ import { formatBillNo } from '@/lib/models';
 
 const PAGE_SIZE = 20;
 
+/** `?q=` pre-fills the search, so a customer row can open that customer's bills. */
 export default function BillsPage() {
+  return (
+    <Suspense fallback={null}>
+      <BillsList />
+    </Suspense>
+  );
+}
+
+function BillsList() {
   const { bills } = useDashboard();
   const [visible, setVisible] = useState(PAGE_SIZE);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(useSearchParams().get('q') ?? '');
 
   const filtered = query.trim()
     ? bills.filter((b) => {

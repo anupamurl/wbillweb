@@ -34,10 +34,9 @@ test('toE164 rejects an empty number', () => {
   assert.equal(toE164('IN', '').ok, false);
 });
 
-test('toE164 handles a different country length (UAE, 9 digits)', () => {
-  const r = toE164('AE', '501234567');
-  assert.equal(r.ok, true);
-  if (r.ok) assert.equal(r.e164, '+971501234567');
+test('toE164 is India-only: a UAE number is rejected, never sent as +91', () => {
+  assert.equal(toE164('IN', '501234567').ok, false); // 9 digits
+  assert.equal(toE164('IN', '+971 50 123 4567').ok, false);
 });
 
 test('isIndianMobile matches the Firestore rules regex exactly', () => {
