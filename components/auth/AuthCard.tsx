@@ -332,44 +332,39 @@ function formatIndian(e164: string) {
 }
 
 /* ------------------------------------------------------------------ *
- * Layout — the site's own language: warm canvas, dot field, one white
- * card with a hairline border, product mocks on a soft inset panel.
+ * Layout — flat, full-bleed split: the form on the warm canvas, product
+ * mocks on a deeper panel running to the viewport edge. No cards, no shadows.
  * ------------------------------------------------------------------ */
 
 function Shell({ mode, switchLink, children }: { mode: AuthMode; switchLink: ReactNode; children: ReactNode }) {
   return (
-    <main className="relative isolate overflow-hidden">
-      <div className="wb-dots" aria-hidden="true" />
-      <div className="wb-container relative py-6 sm:py-10">
-        <div className="wb-in grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-[1.75rem] border border-line bg-surface wb-shadow lg:min-h-[max(40rem,calc(100dvh-9rem))] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
-          <div className="flex flex-col px-6 py-10 sm:px-12 sm:py-12 xl:px-16">
-            <section className="flex flex-1 items-center">
-              <div className="w-full max-w-[24rem]">
-                {children}
-                {switchLink && <p className="mt-8 text-sm text-ink-soft">{switchLink}</p>}
-              </div>
-            </section>
-            <p className="mt-10 max-w-[24rem] border-t border-line pt-6 text-xs leading-relaxed text-ink-faint">
-              By continuing you agree to WBill&rsquo;s{' '}
-              <Link href="/terms/" className="underline underline-offset-2 hover:text-ink">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy/" className="underline underline-offset-2 hover:text-ink">
-                Privacy Policy
-              </Link>
-              . Need help?{' '}
-              <Link href="/support/" className="underline underline-offset-2 hover:text-ink">
-                Contact support
-              </Link>
-              .
-            </p>
+    <main className="relative isolate grid grid-cols-[minmax(0,1fr)] overflow-hidden border-t border-line lg:min-h-[max(44rem,calc(100dvh-4.5rem))] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="wb-in flex flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:px-12 lg:pb-12 lg:pt-12">
+        <section className="flex w-full max-w-[24rem] flex-1 items-center">
+          <div className="w-full">
+            {children}
+            {switchLink && <p className="mt-8 text-sm text-ink-soft">{switchLink}</p>}
           </div>
+        </section>
+        <p className="mt-12 w-full max-w-[24rem] border-t border-line pt-6 text-xs leading-relaxed text-ink-faint">
+          By continuing you agree to WBill&rsquo;s{' '}
+          <Link href="/terms/" className="underline underline-offset-2 hover:text-ink">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy/" className="underline underline-offset-2 hover:text-ink">
+            Privacy Policy
+          </Link>
+          . Need help?{' '}
+          <Link href="/support/" className="underline underline-offset-2 hover:text-ink">
+            Contact support
+          </Link>
+          .
+        </p>
+      </div>
 
-          <div className="hidden p-2 lg:block">
-            <Aside mode={mode} />
-          </div>
-        </div>
+      <div className="hidden border-l border-line lg:block">
+        <Aside mode={mode} />
       </div>
     </main>
   );
@@ -379,7 +374,7 @@ function Shell({ mode, switchLink, children }: { mode: AuthMode; switchLink: Rea
 function Aside({ mode }: { mode: AuthMode }) {
   const text = copy[mode];
   return (
-    <aside aria-hidden="true" className="relative flex h-full flex-col overflow-hidden rounded-[1.35rem] bg-canvas-deep">
+    <aside aria-hidden="true" className="relative flex h-full flex-col overflow-hidden bg-canvas-deep">
       <div className="wb-dots" />
 
       <div className="relative px-10 pt-12 xl:px-14 xl:pt-14">
