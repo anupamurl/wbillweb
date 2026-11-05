@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import WbillMark from '@/components/WbillMark';
-import Icon from '@/components/Icon';
+import Icon, { type IconName } from '@/components/Icon';
 import { DemoBadge } from './primitives';
 import {
   demoBill,
@@ -125,17 +125,39 @@ export function AppBillScreen() {
           <span className="text-[0.95em] font-semibold text-ink tabular">{inr(demoBill.total, true)}</span>
         </div>
       </div>
-      <div className="space-y-1.5 p-3">
-        <span className="flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary text-[0.68em] font-semibold text-white">
-          <Icon name="chat" className="h-3.5 w-3.5" />
-          Share on WhatsApp
-        </span>
-        <div className="grid grid-cols-2 gap-1.5">
-          <span className="flex h-8 items-center justify-center rounded-full border border-line-strong text-[0.6em] font-medium text-ink">Message on WhatsApp</span>
-          <span className="flex h-8 items-center justify-center rounded-full border border-line-strong text-[0.6em] font-medium text-ink">Download PDF</span>
+      <div className="space-y-2 p-3">
+        <MockButton icon="chat">Share on WhatsApp</MockButton>
+        <div className="grid grid-cols-2 gap-2">
+          <MockButton variant="secondary" icon="phone">
+            Message
+          </MockButton>
+          <MockButton variant="secondary" icon="document">
+            PDF
+          </MockButton>
         </div>
       </div>
     </div>
+  );
+}
+
+/** One button style for every app mock, matching the site's primary/secondary buttons at phone scale. */
+function MockButton({
+  children,
+  icon,
+  variant = 'primary',
+  className = '',
+}: {
+  children: ReactNode;
+  icon?: IconName;
+  variant?: 'primary' | 'secondary';
+  className?: string;
+}) {
+  const tone = variant === 'primary' ? 'bg-primary text-white' : 'bg-surface text-ink ring-1 ring-inset ring-line-strong';
+  return (
+    <span className={`flex h-9 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[0.66em] font-semibold ${tone} ${className}`}>
+      {icon && <Icon name={icon} className="h-3.5 w-3.5 shrink-0" />}
+      <span className="truncate">{children}</span>
+    </span>
   );
 }
 
@@ -167,7 +189,7 @@ export function NewBillScreen() {
           <span className="text-[0.65em] text-ink-soft">Total</span>
           <span className="text-[0.95em] font-semibold text-ink tabular">{inr(demoBill.total, true)}</span>
         </div>
-        <span className="mt-2 flex h-9 items-center justify-center rounded-full bg-primary text-[0.68em] font-semibold text-white">Preview bill</span>
+        <MockButton className="mt-2">Preview bill</MockButton>
       </div>
     </div>
   );
