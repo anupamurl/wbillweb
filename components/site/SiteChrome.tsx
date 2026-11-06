@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 
 /** Single-task routes that keep the site header but drop the long marketing footer. */
-const FOCUSED_ROUTES = ['/login', '/signup'];
+const FOCUSED_ROUTES = ['/login', '/signup', '/administrator'];
 
 export function isFocusedRoute(pathname: string | null): boolean {
   if (!pathname) return false;

@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   title: { default: site.defaultTitle, template: `%s | ${site.name}` },
   description: site.description,
   applicationName: site.name,
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '48x48' },
