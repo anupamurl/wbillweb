@@ -4,6 +4,7 @@ import { collection, collectionGroup, deleteDoc, doc, getDocs, onSnapshot, serve
 import { useEffect, useState } from 'react';
 import { firebaseAuth, firestore } from '../firebase';
 import { billFromDoc, shopFromDoc, type Bill, type Shop } from '../models';
+import { removeAllEmployees } from '../team';
 
 /**
  * Read-only data for the /administrator panel.
@@ -168,11 +169,11 @@ export function useAdminData(enabled: boolean): AdminData {
  * access, and every browser they're signed in on signs out at once.
  */
 export async function blockUser(uid: string) {
-  await setDoc(doc(firestore(), 'blocks', uid), { blockedAt: serverTimestamp() });
+  await step('blocking', () => setDoc(doc(firestore(), 'blocks', uid), { blockedAt: serverTimestamp() }));
 }
 
 export async function unblockUser(uid: string) {
-  await deleteDoc(doc(firestore(), 'blocks', uid));
+  await step('unblocking', () => deleteDoc(doc(firestore(), 'blocks', uid)));
 }
 
 /**
@@ -185,15 +186,30 @@ export async function deleteUserData(uid: string) {
   const db = firestore();
   const shop = doc(db, 'shops', uid);
   for (const sub of ['bills', 'logins']) {
-    const snap = await getDocs(collection(shop, sub));
+    const snap = await step(`reading ${sub}`, () => getDocs(collection(shop, sub)));
     for (let i = 0; i < snap.docs.length; i += 450) {
       const batch = writeBatch(db);
       for (const d of snap.docs.slice(i, i + 450)) batch.delete(d.ref);
-      await batch.commit();
+      await step(`deleting ${sub}`, () => batch.commit());
     }
   }
+  // Their team (employee records + invites + links), and their own link if
+  // they were someone else's employee.
+  await step('removing employees', () => removeAllEmployees(uid));
   const batch = writeBatch(db);
   batch.delete(doc(db, 'blocks', uid));
+  batch.delete(doc(db, 'members', uid));
   batch.delete(shop);
-  await batch.commit();
+  await step('deleting the shop', () => batch.commit());
+}
+
+/** Runs one step, labelling any failure with the step name for the UI. */
+async function step<T>(label: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (e) {
+    const err = e as { code?: string; message?: string };
+    console.error(`Admin action failed while ${label}:`, err);
+    throw Object.assign(new Error(`${label}: ${err.code ?? err.message ?? 'unknown error'}`), { code: err.code, step: label });
+  }
 }

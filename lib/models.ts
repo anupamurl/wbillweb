@@ -8,6 +8,8 @@ export type Shop = {
   phone: string;
   ownerPhone: string;
   nextBillNumber: number;
+  /** `preset:<id>` or a PNG/JPEG data URL; '' = no logo. See lib/logos.ts. */
+  logo: string;
 };
 
 export function shopFromDoc(doc: DocumentSnapshot): Shop | null {
@@ -20,6 +22,7 @@ export function shopFromDoc(doc: DocumentSnapshot): Shop | null {
     phone: (d.phone as string) ?? '',
     ownerPhone: (d.ownerPhone as string) ?? '',
     nextBillNumber: typeof d.nextBillNumber === 'number' ? d.nextBillNumber : 1,
+    logo: typeof d.logo === 'string' ? d.logo : '',
   };
 }
 
@@ -36,6 +39,10 @@ export type Bill = {
   subtotal: number;
   grandTotal: number;
   status: 'active';
+  /** Auth uid of whoever made it; '' on bills from before employees existed (the owner). */
+  createdBy: string;
+  /** 'Owner' or the employee's name at the time. */
+  createdByName: string;
 };
 
 export function billFromDoc(doc: DocumentSnapshot): Bill {
@@ -56,6 +63,8 @@ export function billFromDoc(doc: DocumentSnapshot): Bill {
     subtotal: Number(d.subtotal) || 0,
     grandTotal: Number(d.grandTotal) || 0,
     status: 'active',
+    createdBy: (d.createdBy as string) ?? '',
+    createdByName: (d.createdByName as string) ?? '',
   };
 }
 

@@ -8,6 +8,8 @@ import { formatPaise } from '@/lib/currency';
 import { formatPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
 import Icon from '@/components/Icon';
+import ShopLogo from '@/components/ShopLogo';
+import BillActions from '@/components/dashboard/BillActions';
 
 /**
  * A query-string "detail" route (?id=...) rather than /bills/[id] — this
@@ -15,7 +17,7 @@ import Icon from '@/components/Icon';
  * user creates one, so there is nothing to pre-render a dynamic segment for.
  */
 function BillViewInner() {
-  const { bills, loading } = useDashboard();
+  const { bills, loading, shop, isOwner } = useDashboard();
   const id = useSearchParams().get('id');
   const bill = bills.find((b) => b.id === id);
 
@@ -37,7 +39,21 @@ function BillViewInner() {
         Back to bills
       </Link>
 
+      <div className="mt-4">
+        <BillActions bill={bill} />
+      </div>
+
       <div className="mt-4 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+        {shop && (
+          <div className="mb-6 flex items-center gap-3.5 border-b border-border pb-5">
+            <ShopLogo logo={shop.logo} name={shop.name} size={52} />
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold text-ink">{shop.name}</p>
+              {shop.address && <p className="text-xs text-ink-soft">{shop.address}</p>}
+              {shop.phone && <p className="text-xs text-ink-soft">Ph: {shop.phone}</p>}
+            </div>
+          </div>
+        )}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="wb-display text-2xl text-ink">{formatBillNo(bill.billNumber)}</h1>
@@ -57,6 +73,12 @@ function BillViewInner() {
             <span className="text-ink-soft">Phone: </span>
             {formatPhone(bill.customerPhone)}
           </p>
+          {isOwner && bill.createdByName && bill.createdByName !== 'Owner' && (
+            <p className="text-ink">
+              <span className="text-ink-soft">Made by: </span>
+              {bill.createdByName}
+            </p>
+          )}
         </div>
 
         <div className="mt-6 overflow-hidden rounded-xl border border-border">

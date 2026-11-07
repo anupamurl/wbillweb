@@ -2,6 +2,7 @@
 
 import {
   collection,
+  deleteField,
   doc,
   type Firestore,
   getDoc,
@@ -13,10 +14,12 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
   writeBatch,
 } from 'firebase/firestore';
 import { firestore } from './firebase';
 import { billFromDoc, shopFromDoc, type Bill, type BillItem, type Shop } from './models';
+import { removeAllEmployees } from './team';
 
 /**
  * Mirrors wbillmobile/lib/data/*.dart exactly: same collections, same
@@ -32,9 +35,29 @@ export function watchShop(uid: string, onChange: (shop: Shop | null) => void, on
   return onSnapshot(shopRef(uid), (snap) => onChange(shopFromDoc(snap)), onError);
 }
 
-export function watchBills(uid: string, onChange: (bills: Bill[]) => void, onError: (e: Error) => void) {
-  const q = query(billsRef(uid), orderBy('billNumber', 'desc'));
-  return onSnapshot(q, (snap) => onChange(snap.docs.map(billFromDoc)), onError);
+/**
+ * All of a shop's bills, newest first — or, with `createdBy`, only that
+ * person's (employees may only read their own; the rules require the filter).
+ * The filtered query sorts in the browser so it needs no composite index.
+ */
+export function watchBills(
+  shopId: string,
+  onChange: (bills: Bill[]) => void,
+  onError: (e: Error) => void,
+  createdBy?: string,
+) {
+  const q = createdBy
+    ? query(billsRef(shopId), where('createdBy', '==', createdBy))
+    : query(billsRef(shopId), orderBy('billNumber', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const bills = snap.docs.map(billFromDoc);
+      if (createdBy) bills.sort((a, b) => b.billNumber - a.billNumber);
+      onChange(bills);
+    },
+    onError,
+  );
 }
 
 export async function getShop(uid: string): Promise<Shop | null> {
@@ -56,6 +79,11 @@ export async function updateShop(uid: string, input: { name: string; address: st
   await updateDoc(shopRef(uid), { name: input.name, address: input.address, phone: input.phone });
 }
 
+/** Sets the shop logo (`preset:<id>` or an image data URL), or removes it with null. */
+export async function updateShopLogo(uid: string, logo: string | null) {
+  await updateDoc(shopRef(uid), { logo: logo ?? deleteField() });
+}
+
 export type BillDraft = {
   customerName: string;
   customerPhone: string;
@@ -68,7 +96,7 @@ export type BillDraft = {
  * two bills from either client can never collide on a number. The security
  * rules re-check this invariant server-side.
  */
-export async function saveBill(uid: string, draft: BillDraft): Promise<Bill> {
+export async function saveBill(uid: string, draft: BillDraft, creator: { uid: string; name: string }): Promise<Bill> {
   const items: BillItem[] = draft.items.map((i) => ({ ...i, lineTotal: i.qty * i.unitPrice }));
   const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
 
@@ -86,6 +114,8 @@ export async function saveBill(uid: string, draft: BillDraft): Promise<Bill> {
       grandTotal: subtotal,
       status: 'active' as const,
       createdAt: serverTimestamp(),
+      createdBy: creator.uid,
+      createdByName: creator.name.slice(0, 80),
     };
     tx.set(ref, data);
     tx.update(shopRef(uid), { nextBillNumber: n + 1 });
@@ -99,6 +129,8 @@ export async function saveBill(uid: string, draft: BillDraft): Promise<Bill> {
       subtotal,
       grandTotal: subtotal,
       status: 'active' as const,
+      createdBy: creator.uid,
+      createdByName: creator.name.slice(0, 80),
     };
   });
 }
@@ -142,6 +174,7 @@ export function isSelfDeleting() {
 export async function deleteShopAndBills(uid: string, bills: Bill[]) {
   selfDeleting = true;
   try {
+    await removeAllEmployees(uid);
     const batch = writeBatch(db());
     for (const bill of bills) batch.delete(doc(billsRef(uid), bill.id));
     const logins = await getDocs(collection(shopRef(uid), 'logins'));

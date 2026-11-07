@@ -13,6 +13,8 @@ function bill(partial: Partial<Bill> & { date: Date }): Bill {
     subtotal: 10000,
     grandTotal: 10000,
     status: 'active',
+    createdBy: '',
+    createdByName: '',
     ...partial,
   };
 }

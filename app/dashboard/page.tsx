@@ -9,7 +9,7 @@ import { formatPaise } from '@/lib/currency';
 import { overviewOf } from '@/lib/insights';
 
 export default function OverviewPage() {
-  const { shop, bills, error } = useDashboard();
+  const { shop, bills, error, isOwner, employeeName } = useDashboard();
   const overview = overviewOf(bills);
 
   return (
@@ -17,7 +17,9 @@ export default function OverviewPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="wb-display text-2xl text-ink sm:text-3xl">{shop?.name ?? 'Overview'}</h1>
-          <p className="mt-1 text-sm text-ink-soft">Your business, at a glance.</p>
+          <p className="mt-1 text-sm text-ink-soft">
+            {isOwner ? 'Your business, at a glance.' : `Welcome${employeeName ? `, ${employeeName}` : ''}. Here are the bills you’ve made.`}
+          </p>
         </div>
         <Link
           href="/dashboard/bills/new"
@@ -40,9 +42,9 @@ export default function OverviewPage() {
       ) : (
         <>
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Total bills" value={String(overview.totalBills)} icon="receipt" />
-            <StatCard label="Total customers" value={String(overview.totalCustomers)} icon="users" />
-            <StatCard label="Total revenue" value={formatPaise(overview.totalRevenue)} icon="chart" />
+            <StatCard label={isOwner ? 'Total bills' : 'My bills'} value={String(overview.totalBills)} icon="receipt" />
+            <StatCard label={isOwner ? 'Total customers' : 'My customers'} value={String(overview.totalCustomers)} icon="users" />
+            <StatCard label={isOwner ? 'Total revenue' : 'My sales'} value={formatPaise(overview.totalRevenue)} icon="chart" />
             <StatCard
               label="Bills this month"
               value={String(overview.billsThisMonth)}

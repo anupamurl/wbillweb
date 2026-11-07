@@ -15,7 +15,7 @@ const emptyRow: Row = { name: '', qty: '1', price: '' };
 
 export default function NewBillPage() {
   const router = useRouter();
-  const { user } = useDashboard();
+  const { user, shopId, creatorName } = useDashboard();
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [rows, setRows] = useState<Row[]>([{ ...emptyRow }]);
@@ -62,11 +62,15 @@ export default function NewBillPage() {
 
     setSaving(true);
     try {
-      const bill = await saveBill(user.uid, {
-        customerName: customerName.trim(),
-        customerPhone: phoneDigits,
-        items: items.map((i) => ({ name: i.name, qty: i.qty, unitPrice: i.unitPrice as number })),
-      });
+      const bill = await saveBill(
+        shopId ?? user.uid,
+        {
+          customerName: customerName.trim(),
+          customerPhone: phoneDigits,
+          items: items.map((i) => ({ name: i.name, qty: i.qty, unitPrice: i.unitPrice as number })),
+        },
+        { uid: user.uid, name: creatorName },
+      );
       router.push(`/dashboard/bills/view?id=${bill.id}`);
     } catch {
       setError('Could not save the bill. Check your connection and try again.');

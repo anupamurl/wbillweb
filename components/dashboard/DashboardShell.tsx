@@ -3,18 +3,29 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import Icon from '@/components/Icon';
+import Icon, { type IconName } from '@/components/Icon';
+import { useDashboard } from '@/lib/DashboardContext';
 import WbillMark from '@/components/WbillMark';
 import { signOutEverywhere } from '@/lib/session';
 import { formatPhone } from '@/lib/phone';
 import type { SessionUser } from '@/lib/session';
 
-const navItems = [
-  { href: '/dashboard', label: 'Overview', icon: 'layers' as const },
-  { href: '/dashboard/bills', label: 'Bills', icon: 'receipt' as const },
-  { href: '/dashboard/customers', label: 'Customers', icon: 'users' as const },
-  { href: '/dashboard/insights', label: 'Insights', icon: 'chart' as const },
-  { href: '/dashboard/profile', label: 'Profile', icon: 'store' as const },
+type NavItem = { href: string; label: string; icon: IconName };
+
+const ownerNav: NavItem[] = [
+  { href: '/dashboard', label: 'Overview', icon: 'layers' },
+  { href: '/dashboard/bills', label: 'Bills', icon: 'receipt' },
+  { href: '/dashboard/customers', label: 'Customers', icon: 'users' },
+  { href: '/dashboard/insights', label: 'Insights', icon: 'chart' },
+  { href: '/dashboard/employees', label: 'Employees', icon: 'team' },
+  { href: '/dashboard/profile', label: 'Profile', icon: 'store' },
+];
+
+/** Employees bill and see their own bills; shop settings stay with the owner. */
+const employeeNav: NavItem[] = [
+  { href: '/dashboard', label: 'Overview', icon: 'layers' },
+  { href: '/dashboard/bills', label: 'My bills', icon: 'receipt' },
+  { href: '/dashboard/profile', label: 'Account', icon: 'key' },
 ];
 
 export default function DashboardShell({ user, children }: { user: SessionUser; children: React.ReactNode }) {
@@ -22,6 +33,8 @@ export default function DashboardShell({ user, children }: { user: SessionUser; 
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
   const [open, setOpen] = useState(false);
+  const { isOwner, shop, employeeName } = useDashboard();
+  const navItems = isOwner ? ownerNav : employeeNav;
 
   async function handleLogout() {
     setSigningOut(true);
@@ -33,7 +46,9 @@ export default function DashboardShell({ user, children }: { user: SessionUser; 
     }
   }
 
-  const identity = user.displayName || formatPhone(user.phoneNumber) || user.email || 'Your account';
+  const identity = isOwner
+    ? user.displayName || formatPhone(user.phoneNumber) || user.email || 'Your account'
+    : `${employeeName || user.displayName || formatPhone(user.phoneNumber) || 'Employee'}${shop ? ` · ${shop.name}` : ''}`;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-canvas">
@@ -41,6 +56,12 @@ export default function DashboardShell({ user, children }: { user: SessionUser; 
         {/* Desktop sidebar */}
         <aside className="hidden w-56 shrink-0 lg:block">
           <nav aria-label="Dashboard" className="sticky top-24 flex flex-col gap-1">
+            {!isOwner && shop && (
+              <div className="mb-3 rounded-xl border border-border bg-surface px-3 py-2.5">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-ink-soft">Employee at</p>
+                <p className="truncate text-sm font-semibold text-ink">{shop.name}</p>
+              </div>
+            )}
             {navItems.map((item) => (
               <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} />
             ))}
@@ -107,7 +128,7 @@ function NavLink({
   active,
   onClick,
 }: {
-  item: { href: string; label: string; icon: 'layers' | 'receipt' | 'users' | 'chart' | 'store' };
+  item: NavItem;
   active: boolean;
   onClick?: () => void;
 }) {

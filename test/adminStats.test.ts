@@ -7,7 +7,7 @@ const DAY = 86_400_000;
 const now = Date.now();
 
 function shop(id: string, createdAt: Date | null = new Date()): AdminShop {
-  return { id, name: `Shop ${id}`, address: '', phone: '', ownerPhone: '9876543210', nextBillNumber: 1, createdAt };
+  return { id, name: `Shop ${id}`, address: '', phone: '', ownerPhone: '9876543210', nextBillNumber: 1, logo: '', createdAt };
 }
 
 function bill(shopId: string, daysAgo: number, total: number, extra: Partial<AdminBill> = {}): AdminBill {
@@ -23,6 +23,8 @@ function bill(shopId: string, daysAgo: number, total: number, extra: Partial<Adm
     subtotal: total,
     grandTotal: total,
     status: 'active',
+    createdBy: '',
+    createdByName: '',
     ...extra,
   };
 }

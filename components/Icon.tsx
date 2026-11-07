@@ -9,6 +9,28 @@ type IconProps = {
  * Every glyph inherits `currentColor` and the parent's size.
  */
 const paths: Record<string, React.ReactNode> = {
+  team: (
+    <>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+      <path d="M15.5 5.2a3 3 0 0 1 0 5.6" />
+      <path d="M17.5 14.2A5.5 5.5 0 0 1 20.5 19" />
+    </>
+  ),
+  share: (
+    <>
+      <path d="M12 15V3.5" />
+      <path d="m7.5 8 4.5-4.5L16.5 8" />
+      <path d="M5.5 12v6.5A1.5 1.5 0 0 0 7 20h10a1.5 1.5 0 0 0 1.5-1.5V12" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M12 3.5V15" />
+      <path d="m7.5 10.5 4.5 4.5 4.5-4.5" />
+      <path d="M5 20h14" />
+    </>
+  ),
   receipt: (
     <>
       <path d="M6 3.5h12v17l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6L6 20.5z" />
@@ -144,7 +166,8 @@ export type IconName =
   | 'receipt' | 'percent' | 'document' | 'chat' | 'clock' | 'users' | 'chart'
   | 'phone' | 'key' | 'bolt' | 'shield' | 'check' | 'cross' | 'chevron'
   | 'menu' | 'arrow' | 'sparkle' | 'layers' | 'hash'
-  | 'store' | 'wrench' | 'scissors' | 'shirt' | 'tap' | 'fan' | 'brush';
+  | 'store' | 'wrench' | 'scissors' | 'shirt' | 'tap' | 'fan' | 'brush'
+  | 'share' | 'download' | 'team';
 
 export default function Icon({ name, className = 'h-5 w-5' }: IconProps) {
   return (

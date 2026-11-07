@@ -45,10 +45,11 @@ export default function DeleteUserButton({
       onDeleted?.();
     } catch (e) {
       const code = (e as { code?: string })?.code;
+      const stepName = (e as { step?: string })?.step;
       setError(
         code === 'permission-denied'
-          ? 'Firestore refused this. Publish the latest firestore.rules, then try again.'
-          : 'Couldn’t finish deleting. Some data may already be gone — try again to remove the rest.',
+          ? `Firestore refused this${stepName ? ` (while ${stepName})` : ''}. New rules can take up to 10 minutes to apply — wait a few minutes and try again.`
+          : `Couldn’t finish${stepName ? ` (while ${stepName})` : ''}: ${code ?? 'unknown error'}. Try again — anything already removed stays removed.`,
       );
     } finally {
       setBusy(false);

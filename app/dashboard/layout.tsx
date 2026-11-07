@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { DashboardProvider, useDashboard } from '@/lib/DashboardContext';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import ShopSetupForm from '@/components/dashboard/ShopSetupForm';
+import RemovedNotice from '@/components/dashboard/RemovedNotice';
 import { useSession } from '@/lib/session';
 import { useIsAdmin } from '@/lib/admin/data';
 
@@ -50,9 +51,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 }
 
-function DashboardGate({ children }: { children: React.ReactNode }) {
-  const { user, needsShopSetup, loading, error } = useDashboard();
+/** Pages only an owner can open; employees are sent to the overview. */
+const OWNER_ONLY = ['/dashboard/customers', '/dashboard/insights', '/dashboard/employees'];
 
+function DashboardGate({ children }: { children: React.ReactNode }) {
+  const { user, needsShopSetup, loading, error, role } = useDashboard();
+  const pathname = usePathname();
+  const router = useRouter();
+  const blocked = role === 'employee' && OWNER_ONLY.some((p) => pathname?.startsWith(p));
+
+  useEffect(() => {
+    if (blocked) router.replace('/dashboard/');
+  }, [blocked, router]);
+
+  if (role === 'removed') return <RemovedNotice />;
   if (needsShopSetup) return <ShopSetupForm user={user} />;
 
   // A failed first load (permissions, network) would otherwise spin forever.
@@ -70,7 +82,7 @@ function DashboardGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (loading) {
+  if (loading || blocked) {
     return (
       <DashboardShell user={user}>
         <div className="flex min-h-[40vh] items-center justify-center" aria-busy="true">
