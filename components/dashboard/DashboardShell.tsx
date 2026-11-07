@@ -16,6 +16,7 @@ const ownerNav: NavItem[] = [
   { href: '/dashboard', label: 'Overview', icon: 'layers' },
   { href: '/dashboard/bills', label: 'Bills', icon: 'receipt' },
   { href: '/dashboard/customers', label: 'Customers', icon: 'users' },
+  { href: '/dashboard/items', label: 'My items', icon: 'document' },
   { href: '/dashboard/insights', label: 'Insights', icon: 'chart' },
   { href: '/dashboard/employees', label: 'Employees', icon: 'team' },
   { href: '/dashboard/profile', label: 'Profile', icon: 'store' },

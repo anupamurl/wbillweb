@@ -3,7 +3,11 @@
 import { useState, type FormEvent } from 'react';
 import WbillMark from '@/components/WbillMark';
 import { createShop } from '@/lib/data';
+import { DEFAULT_GST_MODE } from '@/lib/gst';
+import { useSegments } from '@/lib/segments';
+import { SegmentPicker } from './BillingSetupFields';
 import { cleanNumber } from '@/lib/phone';
+import { gstinError, normalizeGstin } from '@/lib/gstin';
 import type { SessionUser } from '@/lib/session';
 
 /** First-time setup: `shops/{uid}` doesn't exist yet. Mirrors the mobile app's shop-setup screen. */
@@ -11,6 +15,9 @@ export default function ShopSetupForm({ user }: { user: SessionUser }) {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState(user.phoneNumber ? cleanNumber(user.phoneNumber) : '');
+  const [gstin, setGstin] = useState('');
+  const segments = useSegments();
+  const [picked, setPicked] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -18,6 +25,11 @@ export default function ShopSetupForm({ user }: { user: SessionUser }) {
     event.preventDefault();
     if (!name.trim()) {
       setError('Enter your shop or business name.');
+      return;
+    }
+    const badGstin = gstinError(gstin);
+    if (badGstin) {
+      setError(badGstin);
       return;
     }
     setSaving(true);
@@ -28,6 +40,10 @@ export default function ShopSetupForm({ user }: { user: SessionUser }) {
         address: address.trim(),
         phone: cleanNumber(phone),
         ownerPhone: user.phoneNumber ? cleanNumber(user.phoneNumber) : cleanNumber(phone),
+        gstin: normalizeGstin(gstin),
+        segments: picked.filter((id) => segments?.some((s) => s.id === id)),
+        // Changeable later in Profile; most retail prices already include GST.
+        gstMode: DEFAULT_GST_MODE,
       });
       // The shop snapshot listener picks this up and the dashboard renders.
     } catch {
@@ -38,7 +54,7 @@ export default function ShopSetupForm({ user }: { user: SessionUser }) {
 
   return (
     <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-16">
-      <div className="w-full max-w-sm rounded-3xl border border-border bg-surface/80 p-6 shadow-sm backdrop-blur sm:p-8">
+      <div className={`w-full ${segments?.length ? 'max-w-lg' : 'max-w-sm'} rounded-3xl border border-border bg-surface/80 p-6 shadow-sm backdrop-blur sm:p-8`}>
         <div className="mb-7 flex flex-col items-center gap-3 text-center">
           <WbillMark size={36} />
           <h1 className="wb-display text-2xl text-ink">Set up your shop</h1>
@@ -74,6 +90,22 @@ export default function ShopSetupForm({ user }: { user: SessionUser }) {
               className={inputClass}
             />
           </Field>
+          <Field label="GSTIN (optional)">
+            <input
+              value={gstin}
+              onChange={(e) => setGstin(e.target.value.toUpperCase())}
+              placeholder="27AAPFU0939F1ZV"
+              maxLength={18}
+              autoCapitalize="characters"
+              spellCheck={false}
+              className={`${inputClass} font-mono tracking-wide`}
+            />
+          </Field>
+          {segments?.length !== 0 && (
+            <div className="mt-2">
+              <SegmentPicker segments={segments} value={picked} onChange={setPicked} disabled={saving} />
+            </div>
+          )}
           {error && <p className="text-sm text-error">{error}</p>}
           <button
             type="submit"

@@ -7,6 +7,7 @@ import { useDashboard } from '@/lib/DashboardContext';
 import { formatPaise } from '@/lib/currency';
 import { formatPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
+import { formatRate, gstSummary } from '@/lib/gst';
 import Icon from '@/components/Icon';
 import ShopLogo from '@/components/ShopLogo';
 import BillActions from '@/components/dashboard/BillActions';
@@ -20,6 +21,7 @@ function BillViewInner() {
   const { bills, loading, shop, isOwner } = useDashboard();
   const id = useSearchParams().get('id');
   const bill = bills.find((b) => b.id === id);
+  const gstRows = bill ? gstSummary(bill) : [];
 
   if (!bill) {
     return (
@@ -51,6 +53,7 @@ function BillViewInner() {
               <p className="truncate text-base font-semibold text-ink">{shop.name}</p>
               {shop.address && <p className="text-xs text-ink-soft">{shop.address}</p>}
               {shop.phone && <p className="text-xs text-ink-soft">Ph: {shop.phone}</p>}
+              {shop.gstin && <p className="text-xs font-medium text-ink">GSTIN: {shop.gstin}</p>}
             </div>
           </div>
         )}
@@ -94,7 +97,10 @@ function BillViewInner() {
             <tbody className="divide-y divide-border">
               {bill.items.map((item, index) => (
                 <tr key={index}>
-                  <td className="px-4 py-2.5 text-ink">{item.name}</td>
+                  <td className="px-4 py-2.5 text-ink">
+                    {item.name}
+                    {gstRows.length > 0 && <span className="block text-[0.7rem] text-ink-soft">GST {formatRate(item.gstRate)}</span>}
+                  </td>
                   <td className="px-4 py-2.5 text-right text-ink-soft tabular-nums">{item.qty}</td>
                   <td className="px-4 py-2.5 text-right text-ink-soft tabular-nums">{formatPaise(item.unitPrice)}</td>
                   <td className="px-4 py-2.5 text-right font-medium text-ink tabular-nums">{formatPaise(item.lineTotal)}</td>
@@ -104,10 +110,51 @@ function BillViewInner() {
           </table>
         </div>
 
+        {gstRows.length > 0 && (
+          <div className="mt-5 overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border bg-canvas text-left text-ink-soft">
+                  <th className="px-3 py-2 font-medium">GST</th>
+                  <th className="px-3 py-2 text-right font-medium">Taxable</th>
+                  <th className="px-3 py-2 text-right font-medium">CGST</th>
+                  <th className="px-3 py-2 text-right font-medium">SGST</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border tabular-nums text-ink-soft">
+                {gstRows.map((r) => (
+                  <tr key={r.rate}>
+                    <td className="px-3 py-2 text-ink">{formatRate(r.rate)}</td>
+                    <td className="px-3 py-2 text-right">{formatPaise(r.taxable)}</td>
+                    <td className="px-3 py-2 text-right">{formatPaise(r.cgst)}</td>
+                    <td className="px-3 py-2 text-right">{formatPaise(r.sgst)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {bill.gstMode === 'exclusive' && bill.gstTotal > 0 && (
+          <div className="mt-5 flex flex-col gap-1 text-sm text-ink-soft">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span className="tabular-nums">{formatPaise(bill.subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>GST</span>
+              <span className="tabular-nums">{formatPaise(bill.gstTotal)}</span>
+            </div>
+          </div>
+        )}
+
         <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
           <span className="text-base font-semibold text-ink">Total</span>
           <span className="text-xl font-semibold tabular-nums text-ink">{formatPaise(bill.grandTotal)}</span>
         </div>
+        {bill.gstMode === 'inclusive' && bill.gstTotal > 0 && (
+          <p className="mt-1 text-right text-xs text-ink-soft">Includes GST of {formatPaise(bill.gstTotal)}</p>
+        )}
       </div>
     </div>
   );

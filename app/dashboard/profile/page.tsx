@@ -5,11 +5,13 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import Icon from '@/components/Icon';
 import ShopLogo from '@/components/ShopLogo';
 import ReauthDialog from '@/components/dashboard/ReauthDialog';
+import BillingSettings from '@/components/dashboard/BillingSettings';
 import { useDashboard } from '@/lib/DashboardContext';
 import { deleteShopAndBills, updateShop, updateShopLogo } from '@/lib/data';
 import { imageFileToLogo, PRESET_LOGOS } from '@/lib/logos';
 import { describeAuthError, linkGoogle, resetRecaptcha, sendOtpForLinking, confirmLinkOtp, unlinkProvider } from '@/lib/auth';
 import { toE164, formatPhone } from '@/lib/phone';
+import { gstinError, normalizeGstin } from '@/lib/gstin';
 import { firebaseAuth } from '@/lib/firebase';
 import { signOutEverywhere } from '@/lib/session';
 
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   const [name, setName] = useState(shop?.name ?? '');
   const [address, setAddress] = useState(shop?.address ?? '');
   const [phone, setPhone] = useState(shop?.phone ?? '');
+  const [gstin, setGstin] = useState(shop?.gstin ?? '');
   const [savedAt, setSavedAt] = useState(0);
   const [saving, setSaving] = useState(false);
   const [shopError, setShopError] = useState('');
@@ -43,12 +46,18 @@ export default function ProfilePage() {
     setName(shop.name);
     setAddress(shop.address);
     setPhone(shop.phone);
+    setGstin(shop.gstin);
   }
 
   async function saveShop(event: FormEvent) {
     event.preventDefault();
     if (!name.trim()) {
       setShopError('Shop name is required.');
+      return;
+    }
+    const badGstin = gstinError(gstin);
+    if (badGstin) {
+      setShopError(badGstin);
       return;
     }
     setSaving(true);
@@ -58,7 +67,9 @@ export default function ProfilePage() {
         name: name.trim(),
         address: address.trim(),
         phone: phone.trim(),
+        gstin: normalizeGstin(gstin),
       });
+      setGstin(normalizeGstin(gstin));
       setSavedAt(Date.now());
     } catch {
       setShopError('Could not save. Check your connection and try again.');
@@ -175,6 +186,18 @@ export default function ProfilePage() {
               <Field label="Shop phone">
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20} className={inputClass} />
               </Field>
+              <Field label="GSTIN (optional)">
+                <input
+                  value={gstin}
+                  onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                  maxLength={18}
+                  placeholder="27AAPFU0939F1ZV"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  className={`${inputClass} font-mono tracking-wide`}
+                />
+                <span className="text-xs text-ink-faint">Printed on your bills when filled in.</span>
+              </Field>
               {shopError && <p className="text-sm text-error">{shopError}</p>}
               <div className="flex items-center gap-3">
                 <button
@@ -195,6 +218,8 @@ export default function ProfilePage() {
           </section>
 
           {shop && <LogoSection uid={user.uid} name={name || shop.name} logo={shop.logo} />}
+
+          {shop && <BillingSettings key={shop.id} shop={shop} />}
         </>
       )}
 

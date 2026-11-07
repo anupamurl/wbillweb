@@ -3,6 +3,7 @@
 import type { jsPDF as JsPDF } from 'jspdf';
 import { amountInWords } from './amountInWords';
 import { formatPaise } from './currency';
+import { formatRate, gstSummary } from './gst';
 import { logoSrc } from './logos';
 import { formatBillNo, type Bill, type Shop } from './models';
 
@@ -174,6 +175,7 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   let ly = para(shop.name, textX, top + (logo ? 3 : 0), shopW, 14, 'bold', INK, 1.25) + 2;
   if (shop.address) ly = para(shop.address, textX, ly, shopW, 8.3, 'normal', MUTED, 1.45);
   if (shop.phone) ly = text(`Ph: ${shop.phone}`, textX, ly, 8.3, 'normal', MUTED, { lineHeight: 1.45 });
+  if (shop.gstin) ly = text(`GSTIN: ${shop.gstin}`, textX, ly, 8.3, 'bold', BODY, { lineHeight: 1.45 });
 
   let ry = label('Bill', right, top + 1, 'right');
   ry = text(billNo, right, ry, 16, 'bold', INK, { align: 'right', lineHeight: 1.3 });
@@ -221,7 +223,15 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   const tx = right - totalsW;
   const words = wrap(amountInWords(bill.grandTotal), tx - M - 24, 8.3);
   const boxH = 36;
-  const totalsH = 14 + Math.max(18 + boxH, LABEL * 1.6 + words.length * 8.3 * 1.45) + 32 + 30;
+  // GST: one CGST and one SGST line per rate, between subtotal and total.
+  const gstRows = gstSummary(bill);
+  const gstLines = gstRows.flatMap((r) => [
+    { label: `CGST ${formatRate(r.rate / 2)}`, value: r.cgst },
+    { label: `SGST ${formatRate(r.rate / 2)}`, value: r.sgst },
+  ]);
+  const TAX_LINE = 13;
+  const taxH = gstLines.length * TAX_LINE;
+  const totalsH = 14 + Math.max(18 + taxH + boxH, LABEL * 1.6 + words.length * 8.3 * 1.45) + 32 + 30;
 
   const tableHeader = () => {
     const h = 22;
@@ -243,7 +253,8 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   tableHeader();
   bill.items.forEach((item, i) => {
     const lines = wrap(item.name, colW[1] - cp * 2, size);
-    const rowH = rowPad * 2 + size + (lines.length - 1) * rowLine;
+    const gstNote = gstRows.length ? `GST ${formatRate(item.gstRate)}` : '';
+    const rowH = rowPad * 2 + size + (lines.length - 1) * rowLine + (gstNote ? 6.8 * 1.45 : 0);
     const isLast = i === bill.items.length - 1;
     if (y + rowH + (isLast ? totalsH : 0) > limit) {
       newPage();
@@ -252,6 +263,7 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
     const ty = y + rowPad;
     text(String(i + 1), colX[0] + cp, ty, size, 'normal', MUTED);
     lines.forEach((line, k) => text(line, colX[1] + cp, ty + k * rowLine, size, 'normal', INK));
+    if (gstNote) text(gstNote, colX[1] + cp, ty + lines.length * rowLine - 1, 6.8, 'normal', MUTED);
     text(String(item.qty), colX[2] + colW[2] - cp, ty, size, 'normal', BODY, { align: 'right' });
     text(formatPaise(item.unitPrice), colX[3] + colW[3] - cp, ty, size, 'normal', BODY, { align: 'right' });
     text(formatPaise(item.lineTotal), colX[4] + colW[4] - cp, ty, size, 'bold', INK, { align: 'right' });
@@ -264,9 +276,20 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   if (y + totalsH - 14 > limit) newPage(); // only when a single row overflows a page
 
   const itemCount = bill.items.reduce((n, i) => n + i.qty, 0);
-  text(`Subtotal · ${itemCount} item${itemCount === 1 ? '' : 's'}`, tx + 12, y, 8.3, 'normal', MUTED);
-  text(formatPaise(bill.subtotal || bill.grandTotal), right - 12, y, 8.3, 'normal', BODY, { align: 'right' });
-  const boxY = y + 18;
+  const items = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+  if (gstRows.length && bill.gstMode === 'inclusive') {
+    text(`Taxable value · ${items}`, tx + 12, y, 8.3, 'normal', MUTED);
+    text(formatPaise(bill.subtotal - bill.gstTotal), right - 12, y, 8.3, 'normal', BODY, { align: 'right' });
+  } else {
+    text(`Subtotal · ${items}`, tx + 12, y, 8.3, 'normal', MUTED);
+    text(formatPaise(bill.subtotal || bill.grandTotal), right - 12, y, 8.3, 'normal', BODY, { align: 'right' });
+  }
+  gstLines.forEach((g, k) => {
+    const gy = y + (k + 1) * TAX_LINE;
+    text(g.label, tx + 12, gy, 8.3, 'normal', MUTED);
+    text(formatPaise(g.value), right - 12, gy, 8.3, 'normal', BODY, { align: 'right' });
+  });
+  const boxY = y + 18 + taxH;
   doc.setFillColor(PRIMARY);
   doc.roundedRect(tx, boxY, totalsW, boxH, 7, 7, 'F');
   text('Total', tx + 12, boxY + (boxH - 10) / 2 - 1, 10, 'bold', WHITE);

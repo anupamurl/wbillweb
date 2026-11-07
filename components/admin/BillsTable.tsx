@@ -84,7 +84,10 @@ export default function BillsTable({ bills, shopName }: { bills: AdminBill[]; sh
                             <tbody className="divide-y divide-border">
                               {b.items.map((it, i) => (
                                 <tr key={i}>
-                                  <td className="px-4 py-2 text-ink">{it.name}</td>
+                                  <td className="px-4 py-2 text-ink">
+                                    {it.name}
+                                    {it.gstRate > 0 && <span className="ml-1.5 text-ink-faint">· GST {it.gstRate}%</span>}
+                                  </td>
                                   <td className="px-4 py-2 text-right tabular-nums text-ink-soft">{it.qty}</td>
                                   <td className="px-4 py-2 text-right tabular-nums text-ink-soft">{formatPaise(it.unitPrice)}</td>
                                   <td className="px-4 py-2 text-right tabular-nums text-ink">{formatPaise(it.lineTotal)}</td>
@@ -96,6 +99,14 @@ export default function BillsTable({ bills, shopName }: { bills: AdminBill[]; sh
                                 <td colSpan={3} className="px-4 py-2 text-right text-ink-soft">Subtotal</td>
                                 <td className="px-4 py-2 text-right tabular-nums text-ink">{formatPaise(b.subtotal)}</td>
                               </tr>
+                              {b.gstTotal > 0 && (
+                                <tr>
+                                  <td colSpan={3} className="px-4 py-2 text-right text-ink-soft">
+                                    GST {b.gstMode === 'inclusive' ? '(included)' : '(added)'}
+                                  </td>
+                                  <td className="px-4 py-2 text-right tabular-nums text-ink">{formatPaise(b.gstTotal)}</td>
+                                </tr>
+                              )}
                               <tr>
                                 <td colSpan={3} className="px-4 py-2 text-right font-semibold text-ink">Grand total</td>
                                 <td className="px-4 py-2 text-right font-semibold tabular-nums text-ink">{formatPaise(b.grandTotal)}</td>

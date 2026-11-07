@@ -20,6 +20,8 @@ import {
 import { firestore } from './firebase';
 import { billFromDoc, shopFromDoc, type Bill, type BillItem, type Shop } from './models';
 import { removeAllEmployees } from './team';
+import { computeBill, type GstMode } from './gst';
+import { deleteAllShopItems } from './segments';
 
 /**
  * Mirrors wbillmobile/lib/data/*.dart exactly: same collections, same
@@ -64,19 +66,34 @@ export async function getShop(uid: string): Promise<Shop | null> {
   return shopFromDoc(await getDoc(shopRef(uid)));
 }
 
-export async function createShop(uid: string, input: { name: string; address: string; phone: string; ownerPhone: string }) {
+export async function createShop(
+  uid: string,
+  input: { name: string; address: string; phone: string; ownerPhone: string; gstin: string; segments: string[]; gstMode: GstMode },
+) {
   await setDoc(shopRef(uid), {
     name: input.name,
     address: input.address,
     phone: input.phone,
     ownerPhone: input.ownerPhone,
+    ...(input.gstin ? { gstin: input.gstin } : {}),
+    segments: input.segments.slice(0, MAX_SHOP_SEGMENTS),
+    gstMode: input.gstMode,
     nextBillNumber: 1,
     createdAt: serverTimestamp(),
   });
 }
 
-export async function updateShop(uid: string, input: { name: string; address: string; phone: string }) {
-  await updateDoc(shopRef(uid), { name: input.name, address: input.address, phone: input.phone });
+/** `gstin` is normalised and validated by the caller (lib/gstin.ts); '' removes it. */
+export async function updateShop(uid: string, input: { name: string; address: string; phone: string; gstin: string }) {
+  await updateDoc(shopRef(uid), { name: input.name, address: input.address, phone: input.phone, gstin: input.gstin || deleteField() });
+}
+
+/** Most segments one shop can pick. Keep in sync with firestore.rules. */
+export const MAX_SHOP_SEGMENTS = 20;
+
+/** The owner's business types (segments) and GST mode. */
+export async function updateShopBilling(uid: string, input: { segments: string[]; gstMode: GstMode }) {
+  await updateDoc(shopRef(uid), { segments: input.segments.slice(0, MAX_SHOP_SEGMENTS), gstMode: input.gstMode });
 }
 
 /** Sets the shop logo (`preset:<id>` or an image data URL), or removes it with null. */
@@ -87,7 +104,9 @@ export async function updateShopLogo(uid: string, logo: string | null) {
 export type BillDraft = {
   customerName: string;
   customerPhone: string;
-  items: Pick<BillItem, 'name' | 'qty' | 'unitPrice'>[];
+  items: Pick<BillItem, 'name' | 'qty' | 'unitPrice' | 'gstRate'>[];
+  /** The shop's GST mode, stamped on the bill so it always reads the same. */
+  gstMode: GstMode;
 };
 
 /**
@@ -97,8 +116,7 @@ export type BillDraft = {
  * rules re-check this invariant server-side.
  */
 export async function saveBill(uid: string, draft: BillDraft, creator: { uid: string; name: string }): Promise<Bill> {
-  const items: BillItem[] = draft.items.map((i) => ({ ...i, lineTotal: i.qty * i.unitPrice }));
-  const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
+  const { items, subtotal, gstTotal, grandTotal } = computeBill(draft.items, draft.gstMode);
 
   return runTransaction(db(), async (tx) => {
     const shopSnap = await tx.get(shopRef(uid));
@@ -111,7 +129,9 @@ export async function saveBill(uid: string, draft: BillDraft, creator: { uid: st
       customerPhone: draft.customerPhone,
       items,
       subtotal,
-      grandTotal: subtotal,
+      gstTotal,
+      gstMode: draft.gstMode,
+      grandTotal,
       status: 'active' as const,
       createdAt: serverTimestamp(),
       createdBy: creator.uid,
@@ -127,7 +147,9 @@ export async function saveBill(uid: string, draft: BillDraft, creator: { uid: st
       customerPhone: draft.customerPhone,
       items,
       subtotal,
-      grandTotal: subtotal,
+      gstTotal,
+      gstMode: draft.gstMode,
+      grandTotal,
       status: 'active' as const,
       createdBy: creator.uid,
       createdByName: creator.name.slice(0, 80),
@@ -170,11 +192,12 @@ export function isSelfDeleting() {
   return selfDeleting;
 }
 
-/** Deletes the shop, every bill and login record under it — used for account deletion. */
+/** Deletes the shop, every bill, login record and remembered item under it — used for account deletion. */
 export async function deleteShopAndBills(uid: string, bills: Bill[]) {
   selfDeleting = true;
   try {
     await removeAllEmployees(uid);
+    await deleteAllShopItems(uid);
     const batch = writeBatch(db());
     for (const bill of bills) batch.delete(doc(billsRef(uid), bill.id));
     const logins = await getDocs(collection(shopRef(uid), 'logins'));

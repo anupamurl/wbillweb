@@ -4,18 +4,27 @@ import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
+import ItemCombobox from '@/components/dashboard/ItemCombobox';
 import { useDashboard } from '@/lib/DashboardContext';
 import { saveBill } from '@/lib/data';
 import { formatPaise, parseRupeesToPaise } from '@/lib/currency';
 import { cleanNumber, isIndianMobile } from '@/lib/phone';
+import { GST_RATES, computeBill, formatRate, gstSummary } from '@/lib/gst';
+import { cleanName, itemKey, itemsToRemember, type Suggestion } from '@/lib/catalog';
+import { saveShopItems, useItemSuggestions } from '@/lib/segments';
 
-type Row = { name: string; qty: string; price: string };
+type Row = { name: string; qty: string; price: string; gst: number };
 
-const emptyRow: Row = { name: '', qty: '1', price: '' };
+const emptyRow: Row = { name: '', qty: '1', price: '', gst: 0 };
+
+const paiseToInput = (p: number) => (p % 100 === 0 ? String(p / 100) : (p / 100).toFixed(2));
 
 export default function NewBillPage() {
   const router = useRouter();
-  const { user, shopId, creatorName } = useDashboard();
+  const { user, shop, shopId, isOwner, creatorName } = useDashboard();
+  const gstMode = shop?.gstMode ?? 'inclusive';
+  const showGst = gstMode !== 'none';
+  const { suggestions } = useItemSuggestions(shopId, shop?.segments ?? []);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [rows, setRows] = useState<Row[]>([{ ...emptyRow }]);
@@ -28,18 +37,43 @@ export default function NewBillPage() {
 
   function addRow() {
     setRows((prev) => [...prev, { ...emptyRow }]);
+    // Focus the new line's name once it renders.
+    setTimeout(() => document.getElementById(`item-${rows.length}`)?.querySelector('input')?.focus(), 0);
   }
 
   function removeRow(index: number) {
     setRows((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   }
 
+  /** A suggestion fills name, price and GST, then moves on to the quantity. */
+  function pick(index: number, s: Suggestion) {
+    updateRow(index, { name: s.name, price: paiseToInput(s.price), gst: s.gst });
+    setTimeout(() => {
+      const qty = document.getElementById(`qty-${index}`) as HTMLInputElement | null;
+      qty?.focus();
+      qty?.select();
+    }, 0);
+  }
+
+  /** Typed a known name in full without picking it: fill an empty price/GST. */
+  function fillIfKnown(index: number) {
+    const row = rows[index];
+    if (row.price.trim()) return;
+    const known = suggestions.find((s) => itemKey(s.name) === itemKey(row.name));
+    if (known) updateRow(index, { name: known.name, price: paiseToInput(known.price), gst: known.gst });
+  }
+
   const parsedItems = rows.map((r) => ({
-    name: r.name.trim(),
+    name: cleanName(r.name),
     qty: Number.parseInt(r.qty, 10),
     unitPrice: parseRupeesToPaise(r.price || '0'),
+    gstRate: showGst ? r.gst : 0,
   }));
-  const grandTotal = parsedItems.reduce((sum, i) => sum + (i.unitPrice ?? 0) * (Number.isFinite(i.qty) ? i.qty : 0), 0);
+  const preview = computeBill(
+    parsedItems.map((i) => ({ ...i, qty: Number.isFinite(i.qty) ? i.qty : 0, unitPrice: i.unitPrice ?? 0 })),
+    gstMode,
+  );
+  const gstRows = gstSummary({ ...preview, gstMode });
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -62,15 +96,19 @@ export default function NewBillPage() {
 
     setSaving(true);
     try {
+      const lines = items.map((i) => ({ name: i.name, qty: i.qty, unitPrice: i.unitPrice as number, gstRate: i.gstRate }));
       const bill = await saveBill(
         shopId ?? user.uid,
-        {
-          customerName: customerName.trim(),
-          customerPhone: phoneDigits,
-          items: items.map((i) => ({ name: i.name, qty: i.qty, unitPrice: i.unitPrice as number })),
-        },
+        { customerName: customerName.trim(), customerPhone: phoneDigits, items: lines, gstMode },
         { uid: user.uid, name: creatorName },
       );
+      // Remember new items and changed prices for next time. Best effort:
+      // the bill is already saved, so a failure here must not block anything.
+      const remember = itemsToRemember(
+        lines.map((l) => ({ name: l.name, price: l.unitPrice, gst: l.gstRate })),
+        suggestions,
+      );
+      if (remember.length && shopId) void saveShopItems(shopId, remember).catch(() => {});
       router.push(`/dashboard/bills/view?id=${bill.id}`);
     } catch {
       setError('Could not save the bill. Check your connection and try again.');
@@ -78,14 +116,34 @@ export default function NewBillPage() {
     }
   }
 
+  const rowGrid = showGst
+    ? 'grid-cols-[3.75rem_minmax(0,1fr)_5.5rem_2.5rem] sm:grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_5.5rem_2.5rem]'
+    : 'grid-cols-[4.5rem_minmax(0,1fr)_2.5rem] sm:grid-cols-[minmax(0,1fr)_5rem_7rem_2.5rem]';
+
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       <Link href="/dashboard/bills" className="inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink">
         <Icon name="arrow" className="h-3.5 w-3.5 rotate-180" />
         Back to bills
       </Link>
 
       <h1 className="wb-display mt-3 text-2xl text-ink sm:text-3xl">New bill</h1>
+
+      {shop && shop.segments.length === 0 && (
+        <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-ink-soft">
+          <Icon name="sparkle" className="h-4 w-4 text-primary" />
+          {isOwner ? (
+            <>
+              Get product suggestions with price and GST.
+              <Link href="/dashboard/profile" className="font-medium text-primary hover:underline">
+                Choose what you sell
+              </Link>
+            </>
+          ) : (
+            'Items you bill are remembered and suggested next time.'
+          )}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6 rounded-2xl border border-border bg-surface p-6 sm:p-8">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -113,26 +171,41 @@ export default function NewBillPage() {
         <div>
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-ink">Items</p>
-            <button type="button" onClick={addRow} className="text-sm font-medium text-primary hover:underline">
-              + Add item
-            </button>
+            <p className="text-xs text-ink-soft">
+              {gstMode === 'inclusive' ? 'Prices include GST' : gstMode === 'exclusive' ? 'GST is added to prices' : ''}
+            </p>
           </div>
 
-          <div className="mt-3 flex flex-col gap-2.5">
+          <div className={`mt-3 hidden gap-2 px-1 text-[0.7rem] font-medium text-ink-faint sm:grid ${rowGrid}`}>
+            <span>Item</span>
+            <span className="text-center">Qty</span>
+            <span className="text-right">Price ₹</span>
+            {showGst && <span>GST</span>}
+            <span />
+          </div>
+
+          <div className="mt-2 flex flex-col gap-3 sm:gap-2.5">
             {rows.map((row, index) => {
-              const lineTotal = (parsedItems[index].unitPrice ?? 0) * (Number.isFinite(parsedItems[index].qty) ? parsedItems[index].qty : 0);
+              const line = preview.items[index];
               return (
-                <div key={index} className="grid grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_auto] gap-2 sm:grid-cols-[minmax(0,1fr)_5rem_7rem_auto]">
+                <div key={index} className={`grid gap-2 ${rowGrid}`}>
+                  <div id={`item-${index}`} className={showGst ? 'col-span-4 sm:col-span-1' : 'col-span-3 sm:col-span-1'}>
+                    <ItemCombobox
+                      value={row.name}
+                      onChange={(name) => updateRow(index, { name })}
+                      onPick={(s) => pick(index, s)}
+                      suggestions={suggestions}
+                      className={inputClass}
+                      placeholder={suggestions.length ? 'Type to search items' : 'Item name'}
+                    />
+                  </div>
                   <input
-                    value={row.name}
-                    onChange={(e) => updateRow(index, { name: e.target.value })}
-                    placeholder="Item name"
-                    className={inputClass}
-                  />
-                  <input
+                    id={`qty-${index}`}
                     value={row.qty}
+                    onFocus={() => fillIfKnown(index)}
                     onChange={(e) => updateRow(index, { qty: e.target.value.replace(/\D/g, '') })}
                     placeholder="Qty"
+                    aria-label="Quantity"
                     inputMode="numeric"
                     className={`${inputClass} text-center`}
                   />
@@ -140,9 +213,24 @@ export default function NewBillPage() {
                     value={row.price}
                     onChange={(e) => updateRow(index, { price: e.target.value })}
                     placeholder="Price"
+                    aria-label="Price in rupees"
                     inputMode="decimal"
                     className={`${inputClass} text-right`}
                   />
+                  {showGst && (
+                    <select
+                      value={row.gst}
+                      onChange={(e) => updateRow(index, { gst: Number(e.target.value) })}
+                      aria-label="GST rate"
+                      className={`${inputClass} px-2`}
+                    >
+                      {GST_RATES.map((r) => (
+                        <option key={r} value={r}>
+                          {formatRate(r)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeRow(index)}
@@ -153,17 +241,37 @@ export default function NewBillPage() {
                     <Icon name="cross" className="h-4 w-4" />
                   </button>
                   {row.name && row.qty && row.price && (
-                    <p className="col-span-4 -mt-1 text-right text-xs text-ink-soft">= {formatPaise(lineTotal)}</p>
+                    <p className={`${showGst ? 'col-span-4 sm:col-span-5' : 'col-span-3 sm:col-span-4'} -mt-1 text-right text-xs text-ink-soft`}>
+                      = {formatPaise(line.lineTotal)}
+                      {line.gstAmount > 0 &&
+                        ` · ${gstMode === 'inclusive' ? 'incl.' : '+'} ${formatRate(line.gstRate)} GST ${formatPaise(line.gstAmount)}`}
+                    </p>
                   )}
                 </div>
               );
             })}
           </div>
+
+          <button type="button" onClick={addRow} className="mt-3 text-sm font-medium text-primary hover:underline">
+            + Add item
+          </button>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border pt-5">
-          <span className="text-base font-semibold text-ink">Total</span>
-          <span className="text-xl font-semibold tabular-nums text-ink">{formatPaise(grandTotal)}</span>
+        <div className="flex flex-col gap-1.5 border-t border-border pt-5 text-sm">
+          {gstMode === 'exclusive' && preview.gstTotal > 0 && (
+            <Line label="Subtotal" value={formatPaise(preview.subtotal)} />
+          )}
+          {gstRows.map((r) => (
+            <Line
+              key={r.rate}
+              label={`GST ${formatRate(r.rate)} (CGST ${formatRate(r.rate / 2)} + SGST ${formatRate(r.rate / 2)})`}
+              value={gstMode === 'inclusive' ? `incl. ${formatPaise(r.gst)}` : formatPaise(r.gst)}
+            />
+          ))}
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-base font-semibold text-ink">Total</span>
+            <span className="text-xl font-semibold tabular-nums text-ink">{formatPaise(preview.grandTotal)}</span>
+          </div>
         </div>
 
         {error && <p className="text-sm text-error">{error}</p>}
@@ -176,6 +284,15 @@ export default function NewBillPage() {
           {saving ? 'Saving…' : 'Save bill'}
         </button>
       </form>
+    </div>
+  );
+}
+
+function Line({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-ink-soft">
+      <span>{label}</span>
+      <span className="shrink-0 tabular-nums">{value}</span>
     </div>
   );
 }

@@ -7,11 +7,12 @@ import { billFromDoc, shopFromDoc, type Bill, type Shop } from '../models';
 import { removeAllEmployees } from '../team';
 
 /**
- * Read-only data for the /administrator panel.
+ * Data for the /administrator panel.
  *
  * Nothing here is trusted for access: Firestore's rules allow these reads
- * only to a Google-signed-in wbillapp@gmail.com session, and they never
- * allow an admin to write. A non-admin who opens this page gets permission-denied errors.
+ * only to a Google-signed-in wbillapp@gmail.com session. The admin never
+ * edits a shop or its bills; the only writes are blocks, deletes and the
+ * segment catalogues (lib/segments.ts). A non-admin who opens this page gets permission-denied errors.
  */
 
 export type AdminShop = Shop & { createdAt: Date | null };
@@ -185,7 +186,7 @@ export async function unblockUser(uid: string) {
 export async function deleteUserData(uid: string) {
   const db = firestore();
   const shop = doc(db, 'shops', uid);
-  for (const sub of ['bills', 'logins']) {
+  for (const sub of ['bills', 'logins', 'items']) {
     const snap = await step(`reading ${sub}`, () => getDocs(collection(shop, sub)));
     for (let i = 0; i < snap.docs.length; i += 450) {
       const batch = writeBatch(db);

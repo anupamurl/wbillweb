@@ -1,4 +1,5 @@
 import type { DocumentSnapshot, Timestamp } from 'firebase/firestore';
+import { asGstMode, type GstMode } from './gst';
 
 /** Mirrors wbillmobile/lib/models/shop.dart. `shops/{uid}`. */
 export type Shop = {
@@ -10,6 +11,12 @@ export type Shop = {
   nextBillNumber: number;
   /** `preset:<id>` or a PNG/JPEG data URL; '' = no logo. See lib/logos.ts. */
   logo: string;
+  /** Segment ids (business types) the owner picked; drive item suggestions. */
+  segments: string[];
+  /** How prices and GST work on this shop's bills. See lib/gst.ts. */
+  gstMode: GstMode;
+  /** Optional GST number, printed on bills; '' when not set. See lib/gstin.ts. */
+  gstin: string;
 };
 
 export function shopFromDoc(doc: DocumentSnapshot): Shop | null {
@@ -23,10 +30,22 @@ export function shopFromDoc(doc: DocumentSnapshot): Shop | null {
     ownerPhone: (d.ownerPhone as string) ?? '',
     nextBillNumber: typeof d.nextBillNumber === 'number' ? d.nextBillNumber : 1,
     logo: typeof d.logo === 'string' ? d.logo : '',
+    segments: Array.isArray(d.segments) ? (d.segments as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+    gstMode: asGstMode(d.gstMode),
+    gstin: typeof d.gstin === 'string' ? d.gstin : '',
   };
 }
 
-export type BillItem = { name: string; qty: number; unitPrice: number; lineTotal: number };
+export type BillItem = {
+  name: string;
+  qty: number;
+  unitPrice: number;
+  lineTotal: number;
+  /** GST % on this line; 0 on bills from before GST. */
+  gstRate: number;
+  /** GST in paise on this line (inside lineTotal when inclusive, on top when exclusive). */
+  gstAmount: number;
+};
 
 /** Mirrors wbillmobile/lib/models/bill.dart. `shops/{uid}/bills/{id}`. */
 export type Bill = {
@@ -37,6 +56,10 @@ export type Bill = {
   customerPhone: string;
   items: BillItem[];
   subtotal: number;
+  /** Sum of the lines' GST; 0 on bills without GST. */
+  gstTotal: number;
+  /** The shop's GST mode when the bill was made; '' on bills from before GST. */
+  gstMode: GstMode | '';
   grandTotal: number;
   status: 'active';
   /** Auth uid of whoever made it; '' on bills from before employees existed (the owner). */
@@ -52,6 +75,8 @@ export function billFromDoc(doc: DocumentSnapshot): Bill {
     qty: Number(i.qty) || 0,
     unitPrice: Number(i.unitPrice) || 0,
     lineTotal: Number(i.lineTotal) || 0,
+    gstRate: Number(i.gstRate) || 0,
+    gstAmount: Number(i.gstAmount) || 0,
   }));
   return {
     id: doc.id,
@@ -61,6 +86,8 @@ export function billFromDoc(doc: DocumentSnapshot): Bill {
     customerPhone: (d.customerPhone as string) ?? '',
     items,
     subtotal: Number(d.subtotal) || 0,
+    gstTotal: Number(d.gstTotal) || 0,
+    gstMode: d.gstMode === 'inclusive' || d.gstMode === 'exclusive' || d.gstMode === 'none' ? d.gstMode : '',
     grandTotal: Number(d.grandTotal) || 0,
     status: 'active',
     createdBy: (d.createdBy as string) ?? '',

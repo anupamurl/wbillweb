@@ -7,7 +7,7 @@ const DAY = 86_400_000;
 const now = Date.now();
 
 function shop(id: string, createdAt: Date | null = new Date()): AdminShop {
-  return { id, name: `Shop ${id}`, address: '', phone: '', ownerPhone: '9876543210', nextBillNumber: 1, logo: '', createdAt };
+  return { id, name: `Shop ${id}`, address: '', phone: '', ownerPhone: '9876543210', nextBillNumber: 1, logo: '', segments: [], gstMode: 'inclusive', gstin: '', createdAt };
 }
 
 function bill(shopId: string, daysAgo: number, total: number, extra: Partial<AdminBill> = {}): AdminBill {
@@ -19,8 +19,10 @@ function bill(shopId: string, daysAgo: number, total: number, extra: Partial<Adm
     createdAt: null,
     customerName: '',
     customerPhone: '9876543210',
-    items: [{ name: 'Charger', qty: 1, unitPrice: total, lineTotal: total }],
+    items: [{ name: 'Charger', qty: 1, unitPrice: total, lineTotal: total, gstRate: 0, gstAmount: 0 }],
     subtotal: total,
+    gstTotal: 0,
+    gstMode: '',
     grandTotal: total,
     status: 'active',
     createdBy: '',
@@ -79,7 +81,7 @@ test('pctChange handles a zero baseline', () => {
 test('topItems and customersOf merge by name / phone', () => {
   const bills = [
     bill('a', 1, 10000, { customerPhone: '9000000001', customerName: 'Ravi' }),
-    bill('a', 2, 20000, { customerPhone: '9000000001', items: [{ name: ' charger ', qty: 2, unitPrice: 10000, lineTotal: 20000 }] }),
+    bill('a', 2, 20000, { customerPhone: '9000000001', items: [{ name: ' charger ', qty: 2, unitPrice: 10000, lineTotal: 20000, gstRate: 0, gstAmount: 0 }] }),
   ];
   const items = topItems(bills);
   assert.equal(items.length, 1);
