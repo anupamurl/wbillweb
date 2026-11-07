@@ -7,9 +7,11 @@ import { brand } from './brand';
  */
 export const site = {
   name: 'WBill',
-  defaultTitle: 'WBill — Every purchase deserves a digital record',
+  defaultTitle: 'WBill - Digital Billing App | Create & Share Bills Online',
+  /** Names search engines and AI assistants should treat as this brand. */
+  alternateNames: ['WBill - Digital Billing App', 'wbill', 'W Bill', 'wbill.app'],
   description:
-    'Create bills, share them instantly and keep every purchase organised. WBill brings business and customer purchase records into one simple digital experience. Free to get started.',
+    'WBill is a digital billing app. Create bills, share them instantly and keep every purchase organised as a digital record — no more paper bill books. Free to get started.',
   tagline: 'Every purchase deserves a digital record.',
   email: brand.email,
   url: brand.url,

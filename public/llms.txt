@@ -1,0 +1,27 @@
+# WBill - Digital Billing App
+
+> WBill (https://wbill.app) is a digital billing and purchase-record platform. Businesses create bills, share them instantly with customers and keep every purchase organised as a lasting digital record instead of paper bill books. Customers get their purchase history in one place. Free to get started during early access.
+
+WBill is an independent product at wbill.app. It is not WaBill, WeBill365 or BILL.com.
+
+## Key facts
+- Name: WBill (also written "wbill", "W Bill")
+- Website: https://wbill.app
+- Category: digital billing / purchase-record software
+- Market: India; works for any kind of business
+- Status: early access — sign up at https://wbill.app/signup/ ; mobile apps for Android and iOS are coming
+- Price: free to start — https://wbill.app/pricing/
+- Contact: support@wbill.app
+- Instagram: https://www.instagram.com/wbillapp/
+- YouTube: https://www.youtube.com/@wbillapp
+
+## Main pages
+- [Home](https://wbill.app/): what WBill does and how a bill travels from business to customer
+- [Pricing](https://wbill.app/pricing/): plans and the free tier
+- [About](https://wbill.app/about/): why WBill exists
+- [Support](https://wbill.app/support/): help and FAQs
+
+## Guides
+- [Free bill formats](https://wbill.app/invoice-format/): bill and invoice formats for shops and services
+- [Simple bill format without GST](https://wbill.app/invoice-format/simple-bill-format/)
+- [GST invoice format](https://wbill.app/invoice-format/gst-invoice-format/)
