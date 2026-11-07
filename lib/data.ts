@@ -5,6 +5,7 @@ import {
   doc,
   type Firestore,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -102,10 +103,53 @@ export async function saveBill(uid: string, draft: BillDraft): Promise<Bill> {
   });
 }
 
-/** Deletes the shop and every bill under it — used for account deletion. */
+/** Local calendar day as YYYY-MM-DD, the id of a logins doc. */
+export function dayId(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * Marks today as a day this owner used WBill (shops/{uid}/logins/{day}).
+ * Written at most once per day per browser; failures are ignored because
+ * this only feeds the admin panel's stats.
+ */
+export function recordLogin(uid: string) {
+  const day = dayId();
+  const key = `wb_login_${uid}`;
+  try {
+    if (localStorage.getItem(key) === day) return;
+  } catch {
+    // Storage blocked: just write again, it's one small doc.
+  }
+  setDoc(doc(shopRef(uid), 'logins', day), { at: serverTimestamp(), platform: 'web' })
+    .then(() => {
+      try {
+        localStorage.setItem(key, day);
+      } catch {
+        // Ignore.
+      }
+    })
+    .catch(() => {});
+}
+
+let selfDeleting = false;
+/** True while the owner is deleting their own account (so it isn't mistaken for an admin delete). */
+export function isSelfDeleting() {
+  return selfDeleting;
+}
+
+/** Deletes the shop, every bill and login record under it — used for account deletion. */
 export async function deleteShopAndBills(uid: string, bills: Bill[]) {
-  const batch = writeBatch(db());
-  for (const bill of bills) batch.delete(doc(billsRef(uid), bill.id));
-  batch.delete(shopRef(uid));
-  await batch.commit();
+  selfDeleting = true;
+  try {
+    const batch = writeBatch(db());
+    for (const bill of bills) batch.delete(doc(billsRef(uid), bill.id));
+    const logins = await getDocs(collection(shopRef(uid), 'logins'));
+    for (const login of logins.docs) batch.delete(login.ref);
+    batch.delete(shopRef(uid));
+    await batch.commit();
+  } catch (err) {
+    selfDeleting = false;
+    throw err;
+  }
 }

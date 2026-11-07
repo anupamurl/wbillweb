@@ -9,6 +9,7 @@ import { demoBill } from '@/content/demo';
 import { describeAuthError, resetRecaptcha, sendOtp, signInWithGoogle, type OtpHandle } from '@/lib/auth';
 import { toE164 } from '@/lib/phone';
 import { useSession } from '@/lib/session';
+import { useIsAdmin } from '@/lib/admin/data';
 import { isFirebaseConfigured } from '@/lib/firebase';
 
 const RECAPTCHA_ID = 'wb-recaptcha-container';
@@ -77,9 +78,12 @@ export default function AuthCard({ mode }: { mode: AuthMode }) {
   const [resendIn, setResendIn] = useState(0);
   const codeInputRef = useRef<HTMLInputElement>(null);
 
+  // The super admin has no shop: they always land on the admin panel.
+  const isAdmin = useIsAdmin(session.status === 'signedIn' ? session.user.uid : null);
   useEffect(() => {
-    if (session.status === 'signedIn') router.replace(next);
-  }, [session.status, next, router]);
+    if (session.status !== 'signedIn' || isAdmin === null) return;
+    router.replace(isAdmin ? '/administrator/' : next);
+  }, [session.status, isAdmin, next, router]);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -90,6 +94,16 @@ export default function AuthCard({ mode }: { mode: AuthMode }) {
   useEffect(() => {
     if (step === 'otp') codeInputRef.current?.focus();
   }, [step]);
+
+  // Signed straight back out because the admin blocked this account.
+  const isBlocked = session.status === 'signedOut' && session.reason === 'blocked';
+  const wasDeleted = session.status === 'signedOut' && session.reason === 'deleted';
+  useEffect(() => {
+    if (!isBlocked) return;
+    setStep('phone');
+    setCode('');
+    setOtpHandle(null);
+  }, [isBlocked]);
 
   useEffect(() => () => resetRecaptcha(), []);
 
@@ -209,6 +223,26 @@ export default function AuthCard({ mode }: { mode: AuthMode }) {
             </>
           )}
         </p>
+
+        {isBlocked && (
+          <div role="alert" className="mt-7 flex items-start gap-3 rounded-2xl border border-error/30 bg-error/5 px-4 py-3.5 text-sm">
+            <Icon name="shield" className="mt-0.5 h-5 w-5 shrink-0 text-error" />
+            <div>
+              <p className="font-semibold text-error">You&rsquo;ve been blocked by the administrator</p>
+              <p className="mt-0.5 text-ink-soft">Your account can&rsquo;t be used right now. Please contact your administrator.</p>
+            </div>
+          </div>
+        )}
+
+        {wasDeleted && (
+          <div role="alert" className="mt-7 flex items-start gap-3 rounded-2xl border border-error/30 bg-error/5 px-4 py-3.5 text-sm">
+            <Icon name="shield" className="mt-0.5 h-5 w-5 shrink-0 text-error" />
+            <div>
+              <p className="font-semibold text-error">Your account was deleted by the administrator</p>
+              <p className="mt-0.5 text-ink-soft">Your shop and bills have been removed. Please contact your administrator if you think this is a mistake.</p>
+            </div>
+          </div>
+        )}
 
         {step === 'phone' && (
           <>

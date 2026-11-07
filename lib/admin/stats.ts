@@ -1,4 +1,4 @@
-import type { AdminBill, AdminShop } from './data';
+import type { AdminBill, AdminLogin, AdminShop } from './data';
 
 /** Pure aggregations over the admin snapshot. Amounts are paise. */
 
@@ -234,4 +234,86 @@ export function customersOf(bills: AdminBill[]): CustomerRow[] {
     }
   }
   return [...map.values()].sort((a, b) => b.spent - a.spent);
+}
+
+/** Local calendar day as YYYY-MM-DD (matches logins doc ids). */
+export function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export type TodayStats = {
+  loginsToday: number;
+  loginsYesterday: number;
+  logins7d: number;
+  billsToday: number;
+  billsYesterday: number;
+  revenueToday: number;
+  revenueYesterday: number;
+  signupsToday: number;
+  signupsYesterday: number;
+};
+
+/** Today vs yesterday, plus unique users who logged in over the last 7 days. */
+export function todayStats(shops: AdminShop[], bills: AdminBill[], logins: AdminLogin[], now = new Date()): TodayStats {
+  const today = dayKey(now);
+  const yesterday = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+  const weekKeys = new Set(Array.from({ length: 7 }, (_, i) => dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i))));
+  const users = (day: string) => new Set(logins.filter((l) => l.day === day).map((l) => l.uid)).size;
+  const billsOn = (day: string) => bills.filter((b) => dayKey(b.date) === day);
+  const signupsOn = (day: string) => shops.filter((s) => s.createdAt && dayKey(s.createdAt) === day).length;
+  const bt = billsOn(today);
+  const by = billsOn(yesterday);
+  return {
+    loginsToday: users(today),
+    loginsYesterday: users(yesterday),
+    logins7d: new Set(logins.filter((l) => weekKeys.has(l.day)).map((l) => l.uid)).size,
+    billsToday: bt.length,
+    billsYesterday: by.length,
+    revenueToday: bt.reduce((s, b) => s + b.grandTotal, 0),
+    revenueYesterday: by.reduce((s, b) => s + b.grandTotal, 0),
+    signupsToday: signupsOn(today),
+    signupsYesterday: signupsOn(yesterday),
+  };
+}
+
+export type DailyRow = {
+  day: string;
+  date: Date;
+  logins: number;
+  signups: number;
+  bills: number;
+  revenue: number;
+  activeShops: number;
+};
+
+/** One row per day for the last `days` days, oldest first. */
+export function dailyActivity(shops: AdminShop[], bills: AdminBill[], logins: AdminLogin[], days = 30, now = new Date()): DailyRow[] {
+  const rows: DailyRow[] = Array.from({ length: days }, (_, i) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1 - i));
+    return { day: dayKey(date), date, logins: 0, signups: 0, bills: 0, revenue: 0, activeShops: 0 };
+  });
+  const index = new Map(rows.map((r, i) => [r.day, i]));
+  const users = rows.map(() => new Set<string>());
+  const billing = rows.map(() => new Set<string>());
+  for (const l of logins) {
+    const i = index.get(l.day);
+    if (i === undefined) continue;
+    users[i].add(l.uid);
+  }
+  for (const b of bills) {
+    const i = index.get(dayKey(b.date));
+    if (i === undefined) continue;
+    rows[i].bills += 1;
+    rows[i].revenue += b.grandTotal;
+    billing[i].add(b.shopId);
+  }
+  for (const s of shops) {
+    const i = s.createdAt ? index.get(dayKey(s.createdAt)) : undefined;
+    if (i !== undefined) rows[i].signups += 1;
+  }
+  rows.forEach((r, i) => {
+    r.logins = users[i].size;
+    r.activeShops = billing[i].size;
+  });
+  return rows;
 }

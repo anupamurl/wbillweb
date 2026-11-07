@@ -30,15 +30,69 @@ export function listen() {
   // password-equivalent change), it signs the user out and this reports it.
   onIdTokenChanged(firebaseAuth(), (user) => {
     if (user) {
-      wasSignedIn = true;
-      setSession({ status: 'signedIn', user: toSessionUser(user) });
+      watchBlock(user);
     } else {
-      const expired = wasSignedIn && !signingOut;
+      stopBlockWatch();
+      const reason = blockedOut ? ('blocked' as const) : removedOut ? ('deleted' as const) : wasSignedIn && !signingOut ? ('expired' as const) : undefined;
       wasSignedIn = false;
       signingOut = false;
-      setSession({ status: 'signedOut', user: null, ...(expired && { reason: 'expired' as const }) });
+      blockedOut = false;
+      removedOut = false;
+      setSession({ status: 'signedOut', user: null, ...(reason && { reason }) });
     }
   });
+}
+
+/*
+ * Admin blocks: each signed-in browser watches its own blocks/{uid} record.
+ * The session only becomes "signedIn" once that record is known to be
+ * absent, and the moment it appears every browser signs out and shows the
+ * blocked message. Firestore's rules refuse a blocked user's data anyway.
+ */
+let watchedUid: string | null = null;
+let unwatchBlock: (() => void) | null = null;
+/** Block status for watchedUid: null until the first answer arrives. */
+let blocked: boolean | null = null;
+let blockedOut = false;
+let removedOut = false;
+
+/** Signs out because the admin deleted this account; the login page says so. */
+export async function signOutDeleted() {
+  removedOut = true;
+  await signOut(firebaseAuth());
+}
+
+function watchBlock(user: User) {
+  if (watchedUid === user.uid) {
+    // Token refresh for the same user: keep the existing watch.
+    if (blocked === false) setSession({ status: 'signedIn', user: toSessionUser(user) });
+    return;
+  }
+  stopBlockWatch();
+  const uid = user.uid;
+  watchedUid = uid;
+  void import('./blocks').then(({ watchBlocked }) => {
+    if (watchedUid !== uid) return;
+    unwatchBlock = watchBlocked(uid, (isBlocked) => {
+      if (watchedUid !== uid) return;
+      blocked = isBlocked;
+      if (isBlocked) {
+        blockedOut = true;
+        void signOut(firebaseAuth());
+        return;
+      }
+      wasSignedIn = true;
+      const current = firebaseAuth().currentUser;
+      if (current?.uid === uid) setSession({ status: 'signedIn', user: toSessionUser(current) });
+    });
+  });
+}
+
+function stopBlockWatch() {
+  unwatchBlock?.();
+  unwatchBlock = null;
+  watchedUid = null;
+  blocked = null;
 }
 
 /** Re-reads the user after linking or unlinking a sign-in method. */

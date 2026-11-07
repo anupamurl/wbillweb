@@ -46,10 +46,6 @@ export default function AdminShell({ user, lastUpdated, children }: { user: Sess
         );
       })}
       <p className="mt-6 px-3 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-ink-faint">Account</p>
-      <Link href="/dashboard/" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-ink-soft hover:bg-ink/5 hover:text-ink">
-        <Icon name="store" className="h-4 w-4" />
-        My shop dashboard
-      </Link>
       <button
         type="button"
         onClick={logout}

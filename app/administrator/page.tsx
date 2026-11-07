@@ -7,13 +7,15 @@ import { AreaChart, Avatar, Bars, Kpi, PageHeader, Panel, ShareBar, relativeTime
 import { formatPaise } from '@/lib/currency';
 import { formatPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
-import { dailySeries, monthlySeries, pctChange, platformKpis, signupSeries, topItems, userRows } from '@/lib/admin/stats';
+import { dailySeries, monthlySeries, pctChange, platformKpis, signupSeries, todayStats, topItems, userRows } from '@/lib/admin/stats';
+import DailyActivity from '@/components/admin/DailyActivity';
 
 export default function AdminOverviewPage() {
-  const { shops, bills } = useAdmin();
+  const { shops, bills, logins, loginsError } = useAdmin();
   const [range, setRange] = useState<'30d' | '12m'>('12m');
 
   const kpis = useMemo(() => platformKpis(shops, bills), [shops, bills]);
+  const today = useMemo(() => todayStats(shops, bills, logins), [shops, bills, logins]);
   const rows = useMemo(() => userRows(shops, bills), [shops, bills]);
   const monthly = useMemo(() => monthlySeries(bills, 12), [bills]);
   const daily = useMemo(() => dailySeries(bills, 30), [bills]);
@@ -41,6 +43,40 @@ export default function AdminOverviewPage() {
         }
       />
 
+      <section aria-labelledby="today-heading">
+        <h2 id="today-heading" className="mb-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
+          Today
+        </h2>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Kpi
+            accent
+            label="Users logged in today"
+            value={loginsError ? '—' : today.loginsToday.toLocaleString('en-IN')}
+            icon="users"
+            delta={loginsError ? undefined : pctChange(today.loginsToday, today.loginsYesterday)}
+            hint={loginsError ? 'Publish rules to enable' : `${today.loginsYesterday} yesterday`}
+          />
+          <Kpi
+            label="Bills generated today"
+            value={today.billsToday.toLocaleString('en-IN')}
+            icon="receipt"
+            delta={pctChange(today.billsToday, today.billsYesterday)}
+            hint={`${today.billsYesterday} yesterday`}
+          />
+          <Kpi
+            label="Billed today"
+            value={formatPaise(today.revenueToday)}
+            icon="sparkle"
+            delta={pctChange(today.revenueToday, today.revenueYesterday)}
+            hint={`${formatPaise(today.revenueYesterday)} yesterday`}
+          />
+          <Kpi label="New sign-ups today" value={today.signupsToday.toLocaleString('en-IN')} icon="store" hint={`${today.signupsYesterday} yesterday`} />
+        </div>
+      </section>
+
+      <DailyActivity shops={shops} bills={bills} logins={logins} loginsError={loginsError} />
+
+      <h2 className="-mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">All time</h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi accent label="Total billed (all time)" value={formatPaise(kpis.revenue)} icon="chart" hint={`${kpis.bills.toLocaleString('en-IN')} bills`} />
         <Kpi
@@ -52,7 +88,7 @@ export default function AdminOverviewPage() {
         />
         <Kpi label="Registered users" value={kpis.users.toLocaleString('en-IN')} icon="users" hint={`+${kpis.newUsersThisMonth} this month`} />
         <Kpi
-          label="Active users (7 days)"
+          label="Shops billing (7 days)"
           value={kpis.activeUsers7d.toLocaleString('en-IN')}
           icon="bolt"
           hint={kpis.users ? `${Math.round((kpis.activeUsers7d / kpis.users) * 100)}% of all users` : undefined}
@@ -60,7 +96,12 @@ export default function AdminOverviewPage() {
         <Kpi label="Bills this month" value={kpis.billsThisMonth.toLocaleString('en-IN')} icon="receipt" delta={pctChange(kpis.billsThisMonth, kpis.billsLastMonth)} hint="vs last month" />
         <Kpi label="Average bill value" value={formatPaise(kpis.avgBill)} icon="percent" />
         <Kpi label="End customers served" value={kpis.customers.toLocaleString('en-IN')} icon="phone" hint="unique per shop" />
-        <Kpi label="Today" value={formatPaise(kpis.revenueToday)} icon="sparkle" hint={`${kpis.billsToday} bills so far`} />
+        <Kpi
+          label="Logged in (7 days)"
+          value={loginsError ? '—' : today.logins7d.toLocaleString('en-IN')}
+          icon="key"
+          hint={loginsError ? undefined : kpis.users ? `${Math.round((today.logins7d / kpis.users) * 100)}% of all users` : undefined}
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">

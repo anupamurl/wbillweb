@@ -6,6 +6,7 @@ import { DashboardProvider, useDashboard } from '@/lib/DashboardContext';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import ShopSetupForm from '@/components/dashboard/ShopSetupForm';
 import { useSession } from '@/lib/session';
+import { useIsAdmin } from '@/lib/admin/data';
 
 /**
  * Protects every /dashboard/* route. A signed-out visitor is redirected to
@@ -18,6 +19,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
 
+  const isAdmin = useIsAdmin(session.status === 'signedIn' ? session.user.uid : null);
+
   useEffect(() => {
     if (session.status === 'signedOut') {
       const next = pathname && pathname !== '/dashboard' ? `?next=${encodeURIComponent(pathname)}` : '';
@@ -25,7 +28,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [session.status, pathname, router]);
 
-  if (session.status !== 'signedIn') {
+  // The super admin has no shop and can't make bills (Firestore rules
+  // refuse it too), so every /dashboard/* page sends them to the panel.
+  useEffect(() => {
+    if (isAdmin) router.replace('/administrator/');
+  }, [isAdmin, router]);
+
+  if (session.status !== 'signedIn' || isAdmin !== false) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center" aria-busy="true" aria-live="polite">
         <span className="sr-only">Loading your account…</span>

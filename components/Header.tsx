@@ -7,6 +7,7 @@ import WbillMark from './WbillMark';
 import Icon from './Icon';
 import { signOutEverywhere, useSession } from '@/lib/session';
 import { primaryNav } from '@/lib/site';
+import { useIsAdmin } from '@/lib/admin/data';
 
 /**
  * A fixed 64px bar: transparent over the page top, frosted once it scrolls.
@@ -23,7 +24,9 @@ export default function Header() {
   const pathname = usePathname();
   const session = useSession();
   const signedIn = session.status === 'signedIn';
-  const deciding = session.status === 'unknown';
+  const isAdmin = useIsAdmin(signedIn ? session.user.uid : null);
+  const deciding = session.status === 'unknown' || (signedIn && isAdmin === null);
+  const homeHref = isAdmin ? '/administrator/' : '/dashboard/';
 
   useEffect(() => {
     let frame = 0;
@@ -97,8 +100,8 @@ export default function Header() {
                   <button type="button" onClick={logout} disabled={signingOut} className="wb-btn wb-btn-sm wb-btn-ghost">
                     {signingOut ? 'Logging out…' : 'Logout'}
                   </button>
-                  <Link href="/dashboard/" className="wb-btn wb-btn-sm wb-btn-ink group">
-                    Dashboard
+                  <Link href={homeHref} className="wb-btn wb-btn-sm wb-btn-ink group">
+                    {isAdmin ? 'Admin panel' : 'Dashboard'}
                     <Icon name="arrow" className="wb-arrow h-3.5 w-3.5" />
                   </Link>
                 </>
@@ -150,8 +153,8 @@ export default function Header() {
               <div className="mt-auto flex flex-col gap-2.5">
                 {signedIn ? (
                   <>
-                    <Link href="/dashboard/" onClick={() => setOpen(false)} className="wb-btn wb-btn-lg wb-btn-ink w-full">
-                      Go to dashboard
+                    <Link href={homeHref} onClick={() => setOpen(false)} className="wb-btn wb-btn-lg wb-btn-ink w-full">
+                      {isAdmin ? 'Go to admin panel' : 'Go to dashboard'}
                     </Link>
                     <button type="button" onClick={logout} disabled={signingOut} className="wb-btn wb-btn-lg wb-btn-secondary w-full">
                       {signingOut ? 'Logging out…' : 'Logout'}

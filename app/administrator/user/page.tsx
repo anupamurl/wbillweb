@@ -1,16 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
 import { useAdmin } from '@/components/admin/AdminGate';
 import BillsTable from '@/components/admin/BillsTable';
-import { AreaChart, Avatar, Empty, Kpi, Panel, SearchInput, ShareBar, StatusBadge, ToolbarButton, fmtDate, relativeTime } from '@/components/admin/ui';
+import { AreaChart, Avatar, BlockedBadge, Empty, Kpi, Panel, SearchInput, ShareBar, StatusBadge, ToolbarButton, fmtDate, relativeTime } from '@/components/admin/ui';
 import { formatPaise } from '@/lib/currency';
 import { formatPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
 import { customersOf, monthlySeries, pctChange, topItems, userRows } from '@/lib/admin/stats';
 import { downloadCsv, isoDate, paiseToRupees } from '@/lib/admin/csv';
+import BlockButton from '@/components/admin/BlockButton';
+import DeleteUserButton from '@/components/admin/DeleteUserButton';
 
 export default function AdminUserPage() {
   return (
@@ -22,7 +24,8 @@ export default function AdminUserPage() {
 
 function UserDetail() {
   const id = useSearchParams().get('id') ?? '';
-  const { shops, bills } = useAdmin();
+  const router = useRouter();
+  const { shops, bills, blocked } = useAdmin();
   const [tab, setTab] = useState<'bills' | 'customers' | 'items'>('bills');
   const [q, setQ] = useState('');
 
@@ -110,14 +113,19 @@ function UserDetail() {
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="wb-display text-2xl text-ink">{shop.name}</h1>
                 <StatusBadge status={row.status} />
+                {blocked.has(shop.id) && <BlockedBadge />}
                 {rank > 0 && <span className="rounded-full bg-ink/5 px-2 py-0.5 text-[0.7rem] font-medium text-ink-soft">#{rank} by billed value</span>}
               </div>
               <p className="mt-1 text-sm text-ink-soft">{shop.address || 'No address on file'}</p>
             </div>
           </div>
-          <ToolbarButton onClick={exportBills} icon="document">
-            Export bills CSV
-          </ToolbarButton>
+          <div className="flex flex-wrap gap-2">
+            <ToolbarButton onClick={exportBills} icon="document">
+              Export bills CSV
+            </ToolbarButton>
+            <BlockButton uid={shop.id} name={shop.name} blocked={blocked.has(shop.id)} />
+            <DeleteUserButton uid={shop.id} name={shop.name} bills={shopBills.length} onDeleted={() => router.replace('/administrator/users/')} />
+          </div>
         </div>
 
         <dl className="mt-6 grid gap-x-6 gap-y-4 border-t border-border pt-5 text-sm sm:grid-cols-2 lg:grid-cols-4">

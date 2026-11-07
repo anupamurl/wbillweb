@@ -107,6 +107,15 @@ export function StatusBadge({ status }: { status: UserRow['status'] }) {
   );
 }
 
+export function BlockedBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-error/10 px-2 py-0.5 text-[0.7rem] font-medium text-error">
+      <span className="h-1.5 w-1.5 rounded-full bg-error" />
+      Blocked
+    </span>
+  );
+}
+
 export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
   const initials =
     name

@@ -88,3 +88,43 @@ test('topItems and customersOf merge by name / phone', () => {
   assert.equal(customers[0].spent, 30000);
   assert.equal(customers[0].name, 'Ravi');
 });
+
+test('todayStats counts unique users logged in today, yesterday and over 7 days', async () => {
+  const { todayStats, dayKey } = await import('../lib/admin/stats');
+  const at = new Date(2026, 10, 7, 15);
+  const d = (n: number) => dayKey(new Date(2026, 10, 7 - n));
+  const logins = [
+    { uid: 'a', day: d(0), at },
+    { uid: 'b', day: d(0), at },
+    { uid: 'a', day: d(1), at },
+    { uid: 'c', day: d(6), at },
+    { uid: 'd', day: d(7), at },
+  ];
+  const s = todayStats([shop('a', new Date(2026, 10, 7, 9))], [bill('a', 0, 500)].map((b) => ({ ...b, date: new Date(2026, 10, 7, 10) })), logins, at);
+  assert.equal(s.loginsToday, 2);
+  assert.equal(s.loginsYesterday, 1);
+  assert.equal(s.logins7d, 3);
+  assert.equal(s.billsToday, 1);
+  assert.equal(s.revenueToday, 500);
+  assert.equal(s.signupsToday, 1);
+});
+
+test('dailyActivity buckets logins, bills and sign-ups per day, oldest first', async () => {
+  const { dailyActivity, dayKey } = await import('../lib/admin/stats');
+  const now = new Date(2026, 10, 7, 15);
+  const logins = [
+    { uid: 'a', day: dayKey(now), at: now },
+    { uid: 'a', day: dayKey(now), at: now },
+    { uid: 'b', day: dayKey(now), at: now },
+  ];
+  const bills = [
+    { ...bill('a', 0, 300), date: new Date(2026, 10, 7, 11) },
+    { ...bill('b', 0, 200), date: new Date(2026, 10, 6, 11) },
+  ];
+  const rows = dailyActivity([shop('a', new Date(2026, 10, 6, 8))], bills, logins, 7, now);
+  assert.equal(rows.length, 7);
+  const last = rows[6];
+  assert.equal(last.day, dayKey(now));
+  assert.deepEqual([last.logins, last.bills, last.revenue], [2, 1, 300]);
+  assert.deepEqual([rows[5].bills, rows[5].signups, rows[5].logins], [1, 1, 0]);
+});

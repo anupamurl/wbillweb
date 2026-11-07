@@ -24,7 +24,7 @@ export type SessionUser = {
 export type Session =
   | { status: 'unknown'; user: null }
   | { status: 'signedIn'; user: SessionUser }
-  | { status: 'signedOut'; user: null; reason?: 'expired' | 'unconfigured' };
+  | { status: 'signedOut'; user: null; reason?: 'expired' | 'unconfigured' | 'blocked' | 'deleted' };
 
 const HINT_KEY = 'wb_signed_in';
 

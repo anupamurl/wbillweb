@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useAdmin } from '@/components/admin/AdminGate';
-import { Avatar, Empty, PageHeader, Panel, SearchInput, Select, SortTh, StatusBadge, ToolbarButton, fmtDate, relativeTime } from '@/components/admin/ui';
+import { Avatar, BlockedBadge, Empty, PageHeader, Panel, SearchInput, Select, SortTh, StatusBadge, ToolbarButton, fmtDate, relativeTime } from '@/components/admin/ui';
 import { formatPaise } from '@/lib/currency';
 import { formatPhone } from '@/lib/phone';
 import { userRows, type UserRow } from '@/lib/admin/stats';
 import { downloadCsv, isoDate, paiseToRupees } from '@/lib/admin/csv';
+import BlockButton from '@/components/admin/BlockButton';
+import DeleteUserButton from '@/components/admin/DeleteUserButton';
 
 type SortKey = 'name' | 'joined' | 'bills' | 'revenue' | 'avg' | 'month' | 'last';
-type StatusFilter = 'all' | UserRow['status'];
+type StatusFilter = 'all' | 'blocked' | UserRow['status'];
 
 const sorters: Record<SortKey, (r: UserRow) => number | string> = {
   name: (r) => r.shop.name.toLowerCase(),
@@ -26,7 +28,7 @@ const sorters: Record<SortKey, (r: UserRow) => number | string> = {
 const PAGE = 25;
 
 export default function AdminUsersPage() {
-  const { shops, bills } = useAdmin();
+  const { shops, bills, blocked } = useAdmin();
   const router = useRouter();
   const [q, setQ] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
@@ -39,7 +41,7 @@ export default function AdminUsersPage() {
     const needle = q.trim().toLowerCase();
     const digits = needle.replace(/\D/g, '');
     const list = rows.filter((r) => {
-      if (status !== 'all' && r.status !== status) return false;
+      if (status === 'blocked' ? !blocked.has(r.shop.id) : status !== 'all' && r.status !== status) return false;
       if (!needle) return true;
       return (
         r.shop.name.toLowerCase().includes(needle) ||
@@ -56,7 +58,7 @@ export default function AdminUsersPage() {
       return sort.dir === 'asc' ? c : -c;
     });
     return list;
-  }, [rows, q, status, sort]);
+  }, [rows, q, status, sort, blocked]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const current = Math.min(page, pages - 1);
@@ -70,7 +72,7 @@ export default function AdminUsersPage() {
   function exportCsv() {
     downloadCsv(
       `wbill-users-${isoDate(new Date())}.csv`,
-      ['UID', 'Shop name', 'Owner phone', 'Shop phone', 'Address', 'Joined', 'Status', 'Bills', 'Total billed (INR)', 'Average bill (INR)', 'Billed this month (INR)', 'Customers', 'Last bill'],
+      ['UID', 'Shop name', 'Owner phone', 'Shop phone', 'Address', 'Joined', 'Status', 'Blocked', 'Bills', 'Total billed (INR)', 'Average bill (INR)', 'Billed this month (INR)', 'Customers', 'Last bill'],
       filtered.map((r) => [
         r.shop.id,
         r.shop.name,
@@ -79,6 +81,7 @@ export default function AdminUsersPage() {
         r.shop.address,
         isoDate(r.shop.createdAt),
         r.status,
+        blocked.has(r.shop.id) ? 'yes' : 'no',
         r.bills,
         paiseToRupees(r.revenue),
         paiseToRupees(r.avgBill),
@@ -121,6 +124,7 @@ export default function AdminUsersPage() {
                 { value: 'idle', label: 'Idle (8–30 days)' },
                 { value: 'dormant', label: 'Dormant (30+ days)' },
                 { value: 'new', label: 'No bills yet' },
+                { value: 'blocked', label: `Blocked (${blocked.size})` },
               ]}
             />
           </div>
@@ -133,7 +137,7 @@ export default function AdminUsersPage() {
           <Empty title="No users match" body="Try a different search or status filter." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] text-sm">
+            <table className="w-full min-w-[1100px] text-sm">
               <thead className="bg-canvas text-xs text-ink-soft">
                 <tr>
                   <SortTh label="Shop / owner" k="name" sort={sort} onSort={onSort} />
@@ -144,13 +148,16 @@ export default function AdminUsersPage() {
                   <SortTh label="Avg bill" k="avg" sort={sort} onSort={onSort} align="right" />
                   <SortTh label="This month" k="month" sort={sort} onSort={onSort} align="right" />
                   <SortTh label="Last bill" k="last" sort={sort} onSort={onSort} align="right" />
+                  <th scope="col" className="px-4 py-3 text-right font-medium">Access</th>
+                  <th scope="col" className="w-12 px-2 py-3"><span className="sr-only">Delete</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {visible.map((r) => {
                   const href = `/administrator/user/?id=${encodeURIComponent(r.shop.id)}`;
+                  const isBlocked = blocked.has(r.shop.id);
                   return (
-                    <tr key={r.shop.id} onClick={() => router.push(href)} className="cursor-pointer transition-colors hover:bg-ink/[0.03]">
+                    <tr key={r.shop.id} onClick={() => router.push(href)} className={`cursor-pointer transition-colors hover:bg-ink/[0.03] ${isBlocked ? 'bg-error/[0.03]' : ''}`}>
                       <td className="px-4 py-3">
                         <Link href={href} onClick={(e) => e.stopPropagation()} className="flex items-center gap-3">
                           <Avatar name={r.shop.name} />
@@ -161,7 +168,7 @@ export default function AdminUsersPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={r.status} />
+                        {isBlocked ? <BlockedBadge /> : <StatusBadge status={r.status} />}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-ink-soft">{fmtDate(r.shop.createdAt)}</td>
                       <td className="px-4 py-3 text-right tabular-nums text-ink">{r.bills.toLocaleString('en-IN')}</td>
@@ -169,6 +176,12 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3 text-right tabular-nums text-ink-soft">{formatPaise(r.avgBill)}</td>
                       <td className="px-4 py-3 text-right tabular-nums text-ink">{formatPaise(r.revenueThisMonth)}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-right text-ink-soft">{relativeTime(r.lastBillAt)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <BlockButton uid={r.shop.id} name={r.shop.name} blocked={isBlocked} compact />
+                      </td>
+                      <td className="px-2 py-3 text-right">
+                        <DeleteUserButton uid={r.shop.id} name={r.shop.name} bills={r.bills} compact />
+                      </td>
                     </tr>
                   );
                 })}
