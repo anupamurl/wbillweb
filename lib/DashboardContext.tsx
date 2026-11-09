@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { isSelfDeleting, recordLogin } from './data';
+import { recordLogin } from './data';
 import { useDashboardData, type DashboardData } from './useDashboardData';
 import type { SessionUser } from './session';
 import { touchEmployeeLogin, watchEmployees, type Employee } from './team';
@@ -38,13 +38,12 @@ export function DashboardProvider({ user, children }: { user: SessionUser; child
     return watchEmployees(data.shopId, setEmployees, () => {});
   }, [isOwner, hasShop, data.shopId]);
 
-  // An owner's shop vanished mid-session and they didn't delete it: the
-  // admin deleted this account, so sign out of this browser and say why.
+  // An owner's shop vanished mid-session: the admin erased this account, so sign out of this browser and say why.
   const hadShop = useRef(false);
   useEffect(() => {
     if (!isOwner) return;
     if (hasShop) hadShop.current = true;
-    else if (hadShop.current && !data.loading && !isSelfDeleting()) {
+    else if (hadShop.current && !data.loading) {
       hadShop.current = false;
       void import('./sessionFirebase').then((m) => m.signOutDeleted());
     }

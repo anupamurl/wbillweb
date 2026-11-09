@@ -7,6 +7,8 @@ import { Kpi, PageHeader, Panel, SearchInput, Select, ToolbarButton } from '@/co
 import { formatPaise } from '@/lib/currency';
 import { formatBillNo } from '@/lib/models';
 import { downloadCsv, isoDate, paiseToRupees } from '@/lib/admin/csv';
+import { logAdminAccess } from '@/lib/admin/data';
+import { maskName, maskPhone } from '@/lib/phone';
 
 type Range = 'all' | 'today' | '7d' | '30d' | 'month' | 'lastMonth' | 'year';
 
@@ -47,7 +49,6 @@ export default function AdminBillsPage() {
   const filtered = useMemo(() => {
     const [from, to] = rangeBounds(range);
     const needle = q.trim().toLowerCase();
-    const digits = needle.replace(/\D/g, '');
     const min = Number(minAmount) * 100 || 0;
     return bills.filter((b) => {
       const t = b.date.getTime();
@@ -57,9 +58,7 @@ export default function AdminBillsPage() {
       if (!needle) return true;
       return (
         formatBillNo(b.billNumber).toLowerCase().includes(needle) ||
-        b.customerName.toLowerCase().includes(needle) ||
         (shopName.get(b.shopId) ?? '').toLowerCase().includes(needle) ||
-        (digits.length >= 3 && b.customerPhone.includes(digits)) ||
         b.items.some((i) => i.name.toLowerCase().includes(needle))
       );
     });
@@ -69,7 +68,8 @@ export default function AdminBillsPage() {
   const shopsInView = new Set(filtered.map((b) => b.shopId)).size;
   const itemsInView = filtered.reduce((s, b) => s + b.items.reduce((n, i) => n + i.qty, 0), 0);
 
-  function exportCsv() {
+  async function exportCsv() {
+    await logAdminAccess('export_all_bills', 'all', 'Bills export, customer details masked', filtered.length);
     downloadCsv(
       `wbill-all-bills-${isoDate(new Date())}.csv`,
       ['Shop UID', 'Shop name', 'Bill no.', 'Date', 'Customer name', 'Customer phone', 'Items', 'Item details', 'Subtotal (INR)', 'Grand total (INR)'],
@@ -78,8 +78,8 @@ export default function AdminBillsPage() {
         shopName.get(b.shopId) ?? 'Deleted shop',
         formatBillNo(b.billNumber),
         b.date.toISOString(),
-        b.customerName,
-        b.customerPhone,
+        maskName(b.customerName),
+        maskPhone(b.customerPhone),
         b.items.length,
         b.items.map((i) => `${i.name} x${i.qty} @ ${paiseToRupees(i.unitPrice)}`).join('; '),
         paiseToRupees(b.subtotal),
@@ -93,7 +93,7 @@ export default function AdminBillsPage() {
       <PageHeader
         title="All bills"
         subtitle="Every bill from every shop, newest first. Click a row to see its items."
-        actions={<ToolbarButton onClick={exportCsv} icon="document">Export CSV</ToolbarButton>}
+        actions={<ToolbarButton onClick={() => void exportCsv()} icon="document">Export CSV</ToolbarButton>}
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -105,7 +105,7 @@ export default function AdminBillsPage() {
 
       <Panel flush>
         <div className="flex flex-col gap-2 border-b border-border px-5 py-4 lg:flex-row lg:flex-wrap lg:items-center">
-          <SearchInput value={q} onChange={setQ} placeholder="Search bill no., customer, shop, item…" />
+          <SearchInput value={q} onChange={setQ} placeholder="Search bill no., shop, item…" />
           <Select<Range>
             label="Date range"
             value={range}

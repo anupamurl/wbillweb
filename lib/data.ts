@@ -19,9 +19,7 @@ import {
 } from 'firebase/firestore';
 import { firestore } from './firebase';
 import { billFromDoc, shopFromDoc, type Bill, type BillItem, type Shop } from './models';
-import { removeAllEmployees } from './team';
 import { computeBill, type GstMode } from './gst';
-import { deleteAllShopItems } from './segments';
 
 /**
  * Mirrors wbillmobile/lib/data/*.dart exactly: same collections, same
@@ -165,7 +163,8 @@ export function dayId(d = new Date()): string {
 /**
  * Marks today as a day this owner used WBill (shops/{uid}/logins/{day}).
  * Written at most once per day per browser; failures are ignored because
- * this only feeds the admin panel's stats.
+ * this only feeds the admin panel's stats. Also clears records past the
+ * one-year retention period.
  */
 export function recordLogin(uid: string) {
   const day = dayId();
@@ -182,30 +181,7 @@ export function recordLogin(uid: string) {
       } catch {
         // Ignore.
       }
+      void import('./privacyData').then((m) => m.purgeOldLogins(uid)).catch(() => {});
     })
     .catch(() => {});
-}
-
-let selfDeleting = false;
-/** True while the owner is deleting their own account (so it isn't mistaken for an admin delete). */
-export function isSelfDeleting() {
-  return selfDeleting;
-}
-
-/** Deletes the shop, every bill, login record and remembered item under it — used for account deletion. */
-export async function deleteShopAndBills(uid: string, bills: Bill[]) {
-  selfDeleting = true;
-  try {
-    await removeAllEmployees(uid);
-    await deleteAllShopItems(uid);
-    const batch = writeBatch(db());
-    for (const bill of bills) batch.delete(doc(billsRef(uid), bill.id));
-    const logins = await getDocs(collection(shopRef(uid), 'logins'));
-    for (const login of logins.docs) batch.delete(login.ref);
-    batch.delete(shopRef(uid));
-    await batch.commit();
-  } catch (err) {
-    selfDeleting = false;
-    throw err;
-  }
 }

@@ -55,6 +55,7 @@ export const footerNav = [
     heading: 'Legal',
     links: [
       { href: '/privacy/', label: 'Privacy policy' },
+      { href: '/your-data/', label: 'Your data rights' },
       { href: '/terms/', label: 'Terms of service' },
     ],
   },

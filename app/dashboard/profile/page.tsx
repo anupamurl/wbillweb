@@ -7,7 +7,9 @@ import ShopLogo from '@/components/ShopLogo';
 import ReauthDialog from '@/components/dashboard/ReauthDialog';
 import BillingSettings from '@/components/dashboard/BillingSettings';
 import { useDashboard } from '@/lib/DashboardContext';
-import { deleteShopAndBills, updateShop, updateShopLogo } from '@/lib/data';
+import PrivacySection from '@/components/dashboard/PrivacySection';
+import { updateShop, updateShopLogo } from '@/lib/data';
+import { closeAccount } from '@/lib/privacyData';
 import { imageFileToLogo, PRESET_LOGOS } from '@/lib/logos';
 import { describeAuthError, linkGoogle, resetRecaptcha, sendOtpForLinking, confirmLinkOtp, unlinkProvider } from '@/lib/auth';
 import { toE164, formatPhone } from '@/lib/phone';
@@ -19,7 +21,10 @@ const RECAPTCHA_ID = 'wb-profile-link-recaptcha';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, shop, bills, isOwner, employeeName } = useDashboard();
+  const { user, shop, bills, isOwner, employeeName, employees } = useDashboard();
+  // Firebase only deletes a login that signed in recently. Verifying first
+  // means nothing is closed unless the login can really be removed.
+  const reauthenticated = useRef(false);
 
   const [name, setName] = useState(shop?.name ?? '');
   const [address, setAddress] = useState(shop?.address ?? '');
@@ -137,8 +142,13 @@ export default function ProfilePage() {
     setDeleteStep('deleting');
     setDeleteError('');
     try {
-      await deleteShopAndBills(user.uid, bills);
       const current = firebaseAuth().currentUser;
+      const lastSignIn = current?.metadata.lastSignInTime ? new Date(current.metadata.lastSignInTime).getTime() : 0;
+      if (!reauthenticated.current && Date.now() - lastSignIn > 4 * 60 * 1000) {
+        setDeleteStep('reauth');
+        return;
+      }
+      await closeAccount(user.uid, { role: isOwner ? 'owner' : 'employee', shopName: shop?.name ?? '', employees });
       if (current) await current.delete();
       router.replace('/');
     } catch (err) {
@@ -314,12 +324,14 @@ export default function ProfilePage() {
         <div id={RECAPTCHA_ID} />
       </section>
 
-      {isOwner && (
-        <section className="rounded-2xl border border-error/30 bg-error/5 p-6 sm:p-8">
+      <PrivacySection />
+
+      <section className="rounded-2xl border border-error/30 bg-error/5 p-6 sm:p-8">
           <h2 className="text-base font-semibold text-ink">Delete account</h2>
           <p className="mt-1 text-sm text-ink-soft">
-            Permanently deletes your shop, all {bills.length} saved bill
-            {bills.length === 1 ? '' : 's'}, and your account. This cannot be undone.
+            {isOwner
+              ? `You and your team lose access at once. The law requires us to keep your shop and its ${bills.length} bill${bills.length === 1 ? '' : 's'} in restricted storage for one year, then we erase them. Download your bills first: you may need them for GST.`
+              : 'Your login is removed and you lose access at once. Bills you made stay with the shop, and the shop keeps your name and contact in its team records until the owner removes them.'}
           </p>
           <button
             type="button"
@@ -329,15 +341,15 @@ export default function ProfilePage() {
             Delete my account
           </button>
         </section>
-      )}
 
       {deleteStep === 'confirm' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-4" role="dialog" aria-modal="true">
           <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-xl">
             <h2 className="text-base font-semibold text-ink">Delete your account?</h2>
             <p className="mt-2 text-sm text-ink-soft">
-              This permanently deletes {shop?.name ?? 'your shop'}, all {bills.length} bill{bills.length === 1 ? '' : 's'}, and signs you
-              out everywhere. This cannot be undone.
+              {isOwner
+                ? `This closes ${shop?.name ?? 'your shop'} and signs you out everywhere. You can't get it back. Its data is erased one year from now.`
+                : 'This removes your login and signs you out everywhere. You can\u2019t undo this.'}
             </p>
             {deleteError && <p className="mt-3 text-sm text-error">{deleteError}</p>}
             <div className="mt-5 flex justify-end gap-2.5">
@@ -349,7 +361,7 @@ export default function ProfilePage() {
                 Cancel
               </button>
               <button type="button" onClick={performDelete} className="wb-btn wb-btn-md bg-error text-white">
-                Delete permanently
+                Delete my account
               </button>
             </div>
           </div>
@@ -361,6 +373,7 @@ export default function ProfilePage() {
           user={user}
           onCancel={() => setDeleteStep('confirm')}
           onVerified={() => {
+            reauthenticated.current = true;
             setDeleteStep('idle');
             void performDelete();
           }}

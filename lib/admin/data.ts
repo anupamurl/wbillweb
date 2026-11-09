@@ -1,6 +1,6 @@
 'use client';
 
-import { collection, collectionGroup, deleteDoc, doc, getDocs, onSnapshot, serverTimestamp, setDoc, writeBatch, type DocumentSnapshot, type Timestamp } from 'firebase/firestore';
+import { addDoc, collection, collectionGroup, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where, onSnapshot, serverTimestamp, setDoc, writeBatch, type DocumentSnapshot, type Timestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { firebaseAuth, firestore } from '../firebase';
 import { billFromDoc, shopFromDoc, type Bill, type Shop } from '../models';
@@ -11,8 +11,12 @@ import { removeAllEmployees } from '../team';
  *
  * Nothing here is trusted for access: Firestore's rules allow these reads
  * only to a Google-signed-in wbillapp@gmail.com session. The admin never
- * edits a shop or its bills; the only writes are blocks, deletes and the
- * segment catalogues (lib/segments.ts). A non-admin who opens this page gets permission-denied errors.
+ * edits a shop or its bills; the only writes are blocks, deletes, retention
+ * records, the access log and the segment catalogues (lib/segments.ts). A
+ * non-admin who opens this page gets permission-denied errors.
+ *
+ * Closed accounts are left out of `shops` and `bills`, so their data isn't
+ * shown or counted while it is held for the legal retention period.
  */
 
 export type AdminShop = Shop & { createdAt: Date | null };
@@ -76,12 +80,23 @@ export function useIsAdmin(uid: string | null): boolean | null {
 /** One day a shop owner opened the WBill website: shops/{uid}/logins/{YYYY-MM-DD}. */
 export type AdminLogin = { uid: string; day: string; at: Date | null };
 
+/** An account closed by its user or the admin, held until erasure is due. */
+export type ClosedAccount = {
+  uid: string;
+  requestedAt: Date | null;
+  role: 'owner' | 'employee' | 'admin';
+  shopName: string;
+};
+
 export type AdminData = {
   loading: boolean;
   error: string | null;
   shops: AdminShop[];
   bills: AdminBill[];
   logins: AdminLogin[];
+  closed: ClosedAccount[];
+  /** Inactive owners who have been warned: uid → when. */
+  notices: Map<string, Date | null>;
   /** Blocked users: uid → when they were blocked. */
   blocked: Map<string, Date | null>;
   /** Login stats failed to load (e.g. rules not yet published); the rest still works. */
@@ -94,6 +109,8 @@ export function useAdminData(enabled: boolean): AdminData {
   const [shops, setShops] = useState<AdminShop[] | null>(null);
   const [bills, setBills] = useState<AdminBill[] | null>(null);
   const [logins, setLogins] = useState<AdminLogin[]>([]);
+  const [closed, setClosed] = useState<ClosedAccount[] | null>(null);
+  const [notices, setNotices] = useState<Map<string, Date | null>>(new Map());
   const [blocked, setBlocked] = useState<Map<string, Date | null>>(new Map());
   const [loginsError, setLoginsError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +162,27 @@ export function useAdminData(enabled: boolean): AdminData {
       (snap) => setBlocked(new Map(snap.docs.map((d) => [d.id, tsToDate(d.data().blockedAt)]))),
       () => setBlocked(new Map()),
     );
+    const unsubClosed = onSnapshot(
+      collection(db, 'deletionRequests'),
+      (snap) =>
+        setClosed(
+          snap.docs.map((d) => ({
+            uid: d.id,
+            requestedAt: tsToDate(d.data().requestedAt),
+            role: d.data().role,
+            shopName: (d.data().shopName as string) ?? '',
+          })),
+        ),
+      onError,
+    );
+    const unsubNotices = onSnapshot(
+      collection(db, 'retentionNotices'),
+      (snap) => setNotices(new Map(snap.docs.map((d) => [d.id, tsToDate(d.data().notifiedAt)]))),
+      () => setNotices(new Map()),
+    );
     return () => {
+      unsubClosed();
+      unsubNotices();
       unsubShops();
       unsubBills();
       unsubLogins();
@@ -153,12 +190,15 @@ export function useAdminData(enabled: boolean): AdminData {
     };
   }, [enabled]);
 
+  const closedIds = new Set((closed ?? []).map((c) => c.uid));
   return {
-    loading: shops === null || bills === null,
+    loading: shops === null || bills === null || closed === null,
     error,
-    shops: shops ?? [],
-    bills: bills ?? [],
+    shops: (shops ?? []).filter((s) => !closedIds.has(s.id)),
+    bills: (bills ?? []).filter((b) => !closedIds.has(b.shopId)),
     logins,
+    closed: closed ?? [],
+    notices,
     blocked,
     loginsError,
     lastUpdated,
@@ -178,15 +218,104 @@ export async function unblockUser(uid: string) {
 }
 
 /**
- * Permanently deletes a user's data from Firestore: every bill, every login
- * record, any block record, then the shop itself. Bills go first so that a
- * failure part-way leaves the shop visible in the panel to retry.
- * The Firebase Auth sign-in record isn't touched (that needs a server).
+ * Writes one entry to the append-only access log. Callers await this before
+ * showing data or starting an export, so nothing happens unlogged.
  */
-export async function deleteUserData(uid: string) {
+export async function logAdminAccess(action: string, target: string, reason: string, count: number) {
+  await addDoc(collection(firestore(), 'adminAccessLog'), { action, target, reason: reason.slice(0, 300), count, at: serverTimestamp() });
+}
+
+export async function recordRetentionNotice(uid: string) {
+  await setDoc(doc(firestore(), 'retentionNotices', uid), { notifiedAt: serverTimestamp() });
+}
+
+export type RightsRequest = {
+  id: string;
+  type: string;
+  name: string;
+  contact: string;
+  details: string;
+  shopName: string;
+  uid: string;
+  status: 'new' | 'in_progress' | 'done' | 'rejected';
+  response: string;
+  at: Date | null;
+  respondedAt: Date | null;
+};
+
+/** Every privacy request and grievance, oldest first. */
+export function watchRightsRequests(onChange: (r: RightsRequest[]) => void, onError: (e: Error) => void) {
+  return onSnapshot(
+    collection(firestore(), 'rightsRequests'),
+    (snap) => {
+      const list = snap.docs.map((d) => {
+        const v = d.data();
+        return {
+          id: d.id,
+          type: v.type ?? '',
+          name: v.name ?? '',
+          contact: v.contact ?? '',
+          details: v.details ?? '',
+          shopName: v.shopName ?? '',
+          uid: v.uid ?? '',
+          status: v.status ?? 'new',
+          response: v.response ?? '',
+          at: tsToDate(v.at),
+          respondedAt: tsToDate(v.respondedAt),
+        } as RightsRequest;
+      });
+      list.sort((a, b) => (a.at?.getTime() ?? 0) - (b.at?.getTime() ?? 0));
+      onChange(list);
+    },
+    onError,
+  );
+}
+
+export async function updateRightsRequest(id: string, status: RightsRequest['status'], response: string) {
+  await updateDoc(doc(firestore(), 'rightsRequests', id), { status, response: response.slice(0, 1000), respondedAt: serverTimestamp() });
+}
+
+export async function deleteRightsRequest(id: string) {
+  await deleteDoc(doc(firestore(), 'rightsRequests', id));
+}
+
+/**
+ * Closes an account from the admin panel. Blocks the login and removes the
+ * team at once; the data is held for the legal minimum and erased from the
+ * Retention page. The Firebase Auth login stays blocked until then.
+ */
+export async function adminCloseAccount(uid: string, shopName: string) {
+  const db = firestore();
+  const team = await step('reading the team', () => getDocs(collection(doc(db, 'shops', uid), 'employees')));
+  await step('recording the closure', () =>
+    setDoc(doc(db, 'deletionRequests', uid), {
+      requestedAt: serverTimestamp(),
+      role: 'admin',
+      platform: 'web',
+      shopName: shopName.slice(0, 80),
+      employees: team.docs.map((d) => {
+        const e = d.data();
+        return { name: e.name ?? '', phone: e.phone ?? '', email: e.email ?? '', uid: e.uid ?? '' };
+      }),
+    }),
+  );
+  const alreadyBlocked = (await step('checking the block', () => getDoc(doc(db, 'blocks', uid)))).exists();
+  if (!alreadyBlocked) await blockUser(uid);
+  await step('removing employees', () => removeAllEmployees(uid));
+}
+
+/**
+ * Permanently erases everything held for a user: every bill, login record
+ * and audit entry, the team, consent history, block and closure records,
+ * then the shop itself. Only for accounts past their retention period, or
+ * long-inactive ones (Retention page). Bills go first so that a failure
+ * part-way leaves the account listed to retry. The Firebase Auth sign-in
+ * record isn't touched (that needs a server).
+ */
+export async function eraseAccount(uid: string) {
   const db = firestore();
   const shop = doc(db, 'shops', uid);
-  for (const sub of ['bills', 'logins', 'items']) {
+  for (const sub of ['bills', 'logins', 'items', 'customerEdits']) {
     const snap = await step(`reading ${sub}`, () => getDocs(collection(shop, sub)));
     for (let i = 0; i < snap.docs.length; i += 450) {
       const batch = writeBatch(db);
@@ -197,10 +326,25 @@ export async function deleteUserData(uid: string) {
   // Their team (employee records + invites + links), and their own link if
   // they were someone else's employee.
   await step('removing employees', () => removeAllEmployees(uid));
+  const consentEvents = await step('reading consent history', () => getDocs(collection(doc(db, 'consents', uid), 'events')));
+  for (let i = 0; i < consentEvents.docs.length; i += 450) {
+    const batch = writeBatch(db);
+    for (const d of consentEvents.docs.slice(i, i + 450)) batch.delete(d.ref);
+    await step('deleting consent history', () => batch.commit());
+  }
+  const requests = await step('reading privacy requests', () => getDocs(query(collection(db, 'rightsRequests'), where('uid', '==', uid))));
+  for (let i = 0; i < requests.docs.length; i += 450) {
+    const batch = writeBatch(db);
+    for (const d of requests.docs.slice(i, i + 450)) batch.delete(d.ref);
+    await step('deleting privacy requests', () => batch.commit());
+  }
   const batch = writeBatch(db);
+  batch.delete(doc(db, 'consents', uid));
   batch.delete(doc(db, 'blocks', uid));
   batch.delete(doc(db, 'members', uid));
+  batch.delete(doc(db, 'retentionNotices', uid));
   batch.delete(shop);
+  batch.delete(doc(db, 'deletionRequests', uid));
   await step('deleting the shop', () => batch.commit());
 }
 

@@ -72,10 +72,12 @@ function BillViewInner() {
             <span className="text-ink-soft">Customer: </span>
             {bill.customerName || '—'}
           </p>
-          <p className="text-ink">
-            <span className="text-ink-soft">Phone: </span>
-            {formatPhone(bill.customerPhone)}
-          </p>
+          {bill.customerPhone && (
+            <p className="text-ink">
+              <span className="text-ink-soft">Phone: </span>
+              {formatPhone(bill.customerPhone)}
+            </p>
+          )}
           {isOwner && bill.createdByName && bill.createdByName !== 'Owner' && (
             <p className="text-ink">
               <span className="text-ink-soft">Made by: </span>

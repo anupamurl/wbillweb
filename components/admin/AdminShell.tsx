@@ -11,6 +11,8 @@ const nav: { href: string; label: string; icon: IconName; match: (p: string) => 
   { href: '/administrator/', label: 'Overview', icon: 'layers', match: (p) => p === '/administrator' || p === '/administrator/' },
   { href: '/administrator/users/', label: 'Users', icon: 'users', match: (p) => p.startsWith('/administrator/user') },
   { href: '/administrator/bills/', label: 'All bills', icon: 'receipt', match: (p) => p.startsWith('/administrator/bills') },
+  { href: '/administrator/requests/', label: 'Privacy requests', icon: 'chat', match: (p) => p.startsWith('/administrator/requests') },
+  { href: '/administrator/retention/', label: 'Retention', icon: 'clock', match: (p) => p.startsWith('/administrator/retention') },
   { href: '/administrator/segments/', label: 'Segments', icon: 'store', match: (p) => p.startsWith('/administrator/segments') },
 ];
 

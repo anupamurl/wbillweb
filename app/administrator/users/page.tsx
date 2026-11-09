@@ -9,6 +9,7 @@ import { formatPaise } from '@/lib/currency';
 import { formatPhone } from '@/lib/phone';
 import { userRows, type UserRow } from '@/lib/admin/stats';
 import { downloadCsv, isoDate, paiseToRupees } from '@/lib/admin/csv';
+import { logAdminAccess } from '@/lib/admin/data';
 import BlockButton from '@/components/admin/BlockButton';
 import DeleteUserButton from '@/components/admin/DeleteUserButton';
 
@@ -69,7 +70,8 @@ export default function AdminUsersPage() {
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' }));
   }
 
-  function exportCsv() {
+  async function exportCsv() {
+    await logAdminAccess('export_users', 'all', 'Users export', filtered.length);
     downloadCsv(
       `wbill-users-${isoDate(new Date())}.csv`,
       ['UID', 'Shop name', 'Owner phone', 'Shop phone', 'Address', 'Joined', 'Status', 'Blocked', 'Bills', 'Total billed (INR)', 'Average bill (INR)', 'Billed this month (INR)', 'Customers', 'Last bill'],
@@ -97,7 +99,7 @@ export default function AdminUsersPage() {
       <PageHeader
         title="Users"
         subtitle={`${rows.length.toLocaleString('en-IN')} registered shops · click a row for full details`}
-        actions={<ToolbarButton onClick={exportCsv} icon="document">Export CSV</ToolbarButton>}
+        actions={<ToolbarButton onClick={() => void exportCsv()} icon="document">Export CSV</ToolbarButton>}
       />
 
       <Panel flush>

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalPage from '@/components/LegalPage';
+import LegalContact from '@/components/LegalContact';
 import { brand } from '@/lib/brand';
+import { POLICY_DATE } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -11,12 +13,13 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Service" updated="5 November 2026">
+    <LegalPage title="Terms of Service" updated={POLICY_DATE}>
       <section>
         <h2>Acceptance of terms</h2>
         <p>
-          By creating an account or using WBill, you agree to these terms. If you don&rsquo;t agree,
-          please don&rsquo;t use the app.
+          You accept these terms by ticking the box on the consent screen after you sign in. Your consent to our use of
+          personal data is separate and is covered by our <Link href="/privacy/">Privacy Policy</Link>. You must be 18 or older
+          to use WBill. If you don&rsquo;t agree, please don&rsquo;t use the app.
         </p>
       </section>
 
@@ -53,9 +56,34 @@ export default function TermsPage() {
         <h2>Your data</h2>
         <p>
           You own the invoice, customer, and business data you enter into WBill. We store it to
-          provide the service; we don&rsquo;t claim ownership of it, and you can export or delete it as
-          described in our privacy policy.
+          provide the service; we don&rsquo;t claim ownership of it. You can export it from Profile on the website.
+          When you close your account, access ends at once and the data is erased after the retention period in our{' '}
+          <Link href="/privacy/">Privacy Policy</Link>. WBill is not your tax record-keeper: download your bills before
+          closing your account if you must keep them for longer.
         </p>
+      </section>
+
+      <section>
+        <h2>Data protection: your customers and employees</h2>
+        <p>
+          For personal data of your customers and employees, you are the Data Fiduciary under the Digital Personal Data
+          Protection Act, 2023, and WBill is your Data Processor. WBill will:
+        </p>
+        <ul>
+          <li>process that data only to provide the service, on your instructions as set out in these terms;</li>
+          <li>apply reasonable security safeguards, and tell you without delay about a breach affecting it;</li>
+          <li>help you respond to requests from your customers and employees;</li>
+          <li>use only counts that identify no customer for its own reporting;</li>
+          <li>use the sub-processors named in the Privacy Policy; and</li>
+          <li>erase the data as set out in the Privacy Policy.</li>
+        </ul>
+        <p>You agree to:</p>
+        <ul>
+          <li>tell customers why you record their details, and add a mobile number only where they have agreed to give it;</li>
+          <li>send bills only to the person they are for, and not use WBill details for marketing without valid consent;</li>
+          <li>correct or remove a customer&rsquo;s details when you are required to, using the Customers page; and</li>
+          <li>not record personal data of a child beyond what a purchase needs, or sensitive details in item names or customer names.</li>
+        </ul>
       </section>
 
       <section>
@@ -88,8 +116,9 @@ export default function TermsPage() {
       <section>
         <h2>Termination</h2>
         <p>
-          You can stop using WBill and request account deletion at any time. We may suspend or
-          terminate accounts that violate these terms.
+          You can stop using WBill and close your account at any time. We may suspend or
+          terminate accounts that violate these terms. Data in a closed account is handled as described in
+          our <Link href="/privacy/">Privacy Policy</Link>.
         </p>
       </section>
 
@@ -101,17 +130,14 @@ export default function TermsPage() {
       <section>
         <h2>Changes to these terms</h2>
         <p>
-          If these terms change materially, we&rsquo;ll update the date at the top of this page and,
-          where the change is significant, notify you in the app.
+          If these terms change materially, we&rsquo;ll update the date at the top of this page and
+          ask you to accept them again in the app.
         </p>
       </section>
 
       <section>
         <h2>Contact us</h2>
-        <p>
-          Questions about these terms: email{' '}
-          <a href={`mailto:${brand.email}`}>{brand.email}</a>.
-        </p>
+        <LegalContact />
       </section>
     </LegalPage>
   );

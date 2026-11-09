@@ -44,7 +44,7 @@ const copy = {
   },
 } as const;
 
-const steps = ['Make the bill', 'Send on WhatsApp', 'Kept for good'] as const;
+const steps = ['Make the bill', 'Send on WhatsApp', 'Kept in your account'] as const;
 
 /** Only same-site paths are honoured as a post-login destination. */
 function safeNext(value: string | null): string {
@@ -383,13 +383,14 @@ function Shell({ mode, switchLink, children }: { mode: AuthMode; switchLink: Rea
           </div>
         </section>
         <p className="mt-12 w-full max-w-[24rem] border-t border-line pt-6 text-xs leading-relaxed text-ink-faint">
-          By continuing you agree to WBill&rsquo;s{' '}
-          <Link href="/terms/" className="underline underline-offset-2 hover:text-ink">
-            Terms of Service
-          </Link>{' '}
-          and{' '}
+          We use your mobile number or Google details to sign you in. After that, we&rsquo;ll show you what we collect and ask
+          for your consent. Read our{' '}
           <Link href="/privacy/" className="underline underline-offset-2 hover:text-ink">
             Privacy Policy
+          </Link>{' '}
+          and{' '}
+          <Link href="/terms/" className="underline underline-offset-2 hover:text-ink">
+            Terms of Service
           </Link>
           . Need help?{' '}
           <Link href="/support/" className="underline underline-offset-2 hover:text-ink">

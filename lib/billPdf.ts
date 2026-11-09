@@ -30,6 +30,7 @@ const WHITE = '#FFFFFF';
 
 const THANK_YOU = 'Thank you for your purchase!';
 const FOOTER = 'Computer-generated bill · Made with WBill · wbill.app';
+const PRIVACY_LINE = 'To correct or remove your details on this bill, ask the shop or see wbill.app/your-data';
 
 let fontCache: Promise<[string, string]> | undefined;
 
@@ -199,9 +200,10 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   const vy = label('Billed to', M + pad, cy) + 2;
   if (hasName) {
     const name = wrap(bill.customerName, col2 - M - pad * 2, 10.5, 'bold')[0];
-    text(displayMobile(bill.customerPhone), M + pad, text(name, M + pad, vy, 10.5, 'bold', INK), 8.3, 'normal', BODY);
+    const afterName = text(name, M + pad, vy, 10.5, 'bold', INK);
+    if (bill.customerPhone) text(displayMobile(bill.customerPhone), M + pad, afterName, 8.3, 'normal', BODY);
   } else {
-    text(displayMobile(bill.customerPhone), M + pad, vy, 10.5, 'bold', INK);
+    text(bill.customerPhone ? displayMobile(bill.customerPhone) : 'Walk-in customer', M + pad, vy, 10.5, 'bold', INK);
   }
   text(dateText, col2 + pad, label('Date', col2 + pad, cy) + 2, 10.5, 'bold', INK);
   text(formatPaise(bill.grandTotal), right - pad, label('Total', right - pad, cy, 'right') + 2, 10.5, 'bold', PRIMARY, { align: 'right' });
@@ -231,7 +233,7 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   ]);
   const TAX_LINE = 13;
   const taxH = gstLines.length * TAX_LINE;
-  const totalsH = 14 + Math.max(18 + taxH + boxH, LABEL * 1.6 + words.length * 8.3 * 1.45) + 32 + 30;
+  const totalsH = 14 + Math.max(18 + taxH + boxH, LABEL * 1.6 + words.length * 8.3 * 1.45) + 32 + 43;
 
   const tableHeader = () => {
     const h = 22;
@@ -303,6 +305,7 @@ export async function buildBillPdf(shop: Shop, bill: Bill, preloadedLogo?: Logo)
   // ── Thank you ────────────────────────────────────────────
   text(THANK_YOU, pageW / 2, y, 10, 'bold', INK, { align: 'center' });
   text(`We hope to see you again at ${shop.name}.`, pageW / 2, y + 15, 8.3, 'normal', MUTED, { align: 'center' });
+  text(PRIVACY_LINE, pageW / 2, y + 28, 6.8, 'normal', MUTED, { align: 'center' });
 
   // ── Every page: accent bar + footer ──────────────────────
   const pages = doc.getNumberOfPages();

@@ -6,6 +6,7 @@ import { DashboardProvider, useDashboard } from '@/lib/DashboardContext';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import ShopSetupForm from '@/components/dashboard/ShopSetupForm';
 import RemovedNotice from '@/components/dashboard/RemovedNotice';
+import ConsentBoundary from '@/components/dashboard/ConsentBoundary';
 import { useSession } from '@/lib/session';
 import { useIsAdmin } from '@/lib/admin/data';
 
@@ -45,9 +46,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <DashboardProvider user={session.user}>
-      <DashboardGate>{children}</DashboardGate>
-    </DashboardProvider>
+    <ConsentBoundary user={session.user}>
+      <DashboardProvider user={session.user}>
+        <DashboardGate>{children}</DashboardGate>
+      </DashboardProvider>
+    </ConsentBoundary>
   );
 }
 

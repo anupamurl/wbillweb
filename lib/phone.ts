@@ -43,3 +43,19 @@ export function formatPhone(e164OrDigits: string | null | undefined): string {
   if (/^\d{10}$/.test(d)) return `${d.slice(0, 5)} ${d.slice(5)}`;
   return e164OrDigits;
 }
+
+/** 98765 43210 → ••••••3210, for screens that shouldn't show the full number. */
+export function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  return digits ? `••••••${digits.slice(-4)}` : '';
+}
+
+/** Priya Sharma → P••• S••• */
+export function maskName(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]}•••`)
+    .join(' ');
+}

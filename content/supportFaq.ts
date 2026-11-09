@@ -19,7 +19,7 @@ export const supportFaq: FaqItem[] = [
   {
     question: 'How do I delete my account and data?',
     answer:
-      "You can delete your account from Profile in your dashboard, or email us from the phone number linked to your account and we'll delete your data within the timeframe described in our privacy policy.",
+      "Use Delete account in Profile on the website or in Settings in the app, or see the Your data rights page. You lose access at once. The law requires us to keep the data in restricted storage for one year, and then we erase it.",
   },
   {
     question: 'I found a bug',

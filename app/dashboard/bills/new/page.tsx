@@ -80,8 +80,8 @@ export default function NewBillPage() {
     setError('');
 
     const phoneDigits = cleanNumber(customerPhone);
-    if (!isIndianMobile(phoneDigits)) {
-      setError('Enter a valid 10-digit customer mobile number.');
+    if (phoneDigits && !isIndianMobile(phoneDigits)) {
+      setError('Enter a valid 10-digit customer mobile number, or leave it blank.');
       return;
     }
     const items = parsedItems;
@@ -156,7 +156,7 @@ export default function NewBillPage() {
               className={inputClass}
             />
           </Field>
-          <Field label="Customer mobile number" required>
+          <Field label="Customer mobile number (optional)">
             <input
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
@@ -167,6 +167,10 @@ export default function NewBillPage() {
             />
           </Field>
         </div>
+
+        <p className="-mt-3 text-xs text-ink-soft">
+          Add a customer&rsquo;s details only if they want the bill sent to them. Tell them it will be saved with this bill.
+        </p>
 
         <div>
           <div className="flex items-center justify-between">

@@ -5,7 +5,6 @@ import { useMemo, useState } from 'react';
 import { useAdmin } from '@/components/admin/AdminGate';
 import { AreaChart, Avatar, Bars, Kpi, PageHeader, Panel, ShareBar, relativeTime, Empty } from '@/components/admin/ui';
 import { formatPaise } from '@/lib/currency';
-import { formatPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
 import { dailySeries, monthlySeries, pctChange, platformKpis, signupSeries, todayStats, topItems, userRows } from '@/lib/admin/stats';
 import DailyActivity from '@/components/admin/DailyActivity';
@@ -202,7 +201,7 @@ export default function AdminOverviewPage() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-ink">{shopName.get(b.shopId) ?? 'Deleted shop'}</p>
                       <p className="mt-0.5 truncate text-xs text-ink-soft">
-                        {formatBillNo(b.billNumber)} · {b.customerName || formatPhone(b.customerPhone)} · {relativeTime(b.date)}
+                        {formatBillNo(b.billNumber)} · {relativeTime(b.date)}
                       </p>
                     </div>
                     <span className="shrink-0 text-sm font-semibold tabular-nums text-ink">{formatPaise(b.grandTotal)}</span>

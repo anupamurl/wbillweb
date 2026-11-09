@@ -68,6 +68,7 @@ export default function BillActions({ bill, compact = false }: { bill: Bill; com
         >
           {label('share', 'Share', busy === 'share')}
         </button>
+        {bill.customerPhone && (
         <a
           href={whatsAppUrl(current, bill)}
           target="_blank"
@@ -78,6 +79,7 @@ export default function BillActions({ bill, compact = false }: { bill: Bill; com
         >
           {label('chat', 'WhatsApp', false)}
         </a>
+        )}
         <button
           type="button"
           onClick={() => run('download')}

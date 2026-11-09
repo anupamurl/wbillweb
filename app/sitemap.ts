@@ -13,6 +13,7 @@ const staticRoutes: Array<{ path: string; changeFrequency: 'weekly' | 'monthly' 
   { path: '/invoice-format/', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/privacy/', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms/', changeFrequency: 'yearly', priority: 0.3 },
+  { path: '/your-data/', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/support/', changeFrequency: 'monthly', priority: 0.5 },
 ];
 

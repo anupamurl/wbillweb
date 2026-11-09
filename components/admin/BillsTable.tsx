@@ -3,15 +3,18 @@
 import Link from 'next/link';
 import { Fragment, useState } from 'react';
 import { formatPaise } from '@/lib/currency';
-import { formatPhone } from '@/lib/phone';
+import { formatPhone, maskName, maskPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
 import type { AdminBill } from '@/lib/admin/data';
 import { Empty, fmtDate } from './ui';
 
 const PAGE = 30;
 
-/** Bills with click-to-expand line items. `shopName` adds a shop column. */
-export default function BillsTable({ bills, shopName }: { bills: AdminBill[]; shopName?: Map<string, string> }) {
+/**
+ * Bills with click-to-expand line items. `shopName` adds a shop column.
+ * Customer details are masked unless `reveal` is set after a logged reason.
+ */
+export default function BillsTable({ bills, shopName, reveal = false }: { bills: AdminBill[]; shopName?: Map<string, string>; reveal?: boolean }) {
   const [open, setOpen] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const pages = Math.max(1, Math.ceil(bills.length / PAGE));
@@ -61,8 +64,8 @@ export default function BillsTable({ bills, shopName }: { bills: AdminBill[]; sh
                       </td>
                     )}
                     <td className="px-4 py-3">
-                      <span className="block max-w-[14rem] truncate text-ink">{b.customerName || '—'}</span>
-                      <span className="block text-xs text-ink-soft">{formatPhone(b.customerPhone) || b.customerPhone}</span>
+                      <span className="block max-w-[14rem] truncate text-ink">{(reveal ? b.customerName : maskName(b.customerName)) || '—'}</span>
+                      <span className="block text-xs text-ink-soft">{reveal ? formatPhone(b.customerPhone) || b.customerPhone : maskPhone(b.customerPhone)}</span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-ink-soft">{fmtDate(b.date, true)}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-ink-soft">{b.items.length}</td>

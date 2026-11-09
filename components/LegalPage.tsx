@@ -20,6 +20,9 @@ export default function LegalPage({
             <Link href="/privacy/" className="text-ink-soft transition-colors hover:text-ink">
               Privacy policy
             </Link>
+            <Link href="/your-data/" className="text-ink-soft transition-colors hover:text-ink">
+              Your data rights
+            </Link>
             <Link href="/terms/" className="text-ink-soft transition-colors hover:text-ink">
               Terms of service
             </Link>

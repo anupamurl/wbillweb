@@ -11,6 +11,9 @@ import { formatPhone } from '@/lib/phone';
 import { formatBillNo } from '@/lib/models';
 import { customersOf, monthlySeries, pctChange, topItems, userRows } from '@/lib/admin/stats';
 import { downloadCsv, isoDate, paiseToRupees } from '@/lib/admin/csv';
+import { logAdminAccess } from '@/lib/admin/data';
+import { maskName, maskPhone } from '@/lib/phone';
+import Modal from '@/components/admin/Modal';
 import BlockButton from '@/components/admin/BlockButton';
 import DeleteUserButton from '@/components/admin/DeleteUserButton';
 
@@ -28,6 +31,8 @@ function UserDetail() {
   const { shops, bills, blocked } = useAdmin();
   const [tab, setTab] = useState<'bills' | 'customers' | 'items'>('bills');
   const [q, setQ] = useState('');
+  const [revealed, setRevealed] = useState(false);
+  const [asking, setAsking] = useState(false);
 
   const shop = shops.find((s) => s.id === id) ?? null;
   const shopBills = useMemo(() => bills.filter((b) => b.shopId === id), [bills, id]);
@@ -48,11 +53,11 @@ function UserDetail() {
     return shopBills.filter(
       (b) =>
         formatBillNo(b.billNumber).toLowerCase().includes(needle) ||
-        b.customerName.toLowerCase().includes(needle) ||
-        (digits.length >= 3 && b.customerPhone.includes(digits)) ||
+        (revealed && b.customerName.toLowerCase().includes(needle)) ||
+        (revealed && digits.length >= 3 && b.customerPhone.includes(digits)) ||
         b.items.some((i) => i.name.toLowerCase().includes(needle)),
     );
-  }, [shopBills, q]);
+  }, [shopBills, q, revealed]);
 
   if (!shop || !row) {
     return (
@@ -77,15 +82,16 @@ function UserDetail() {
   const topCustomerSpend = customers[0]?.spent || 1;
   const topItemRevenue = items[0]?.revenue || 1;
 
-  function exportBills() {
+  async function exportBills() {
+    await logAdminAccess('export_shop_bills', id, revealed ? 'Customer details included' : 'Customer details masked', filteredBills.length);
     downloadCsv(
       `wbill-${shop!.name.replace(/[^\w]+/g, '-').toLowerCase()}-bills-${isoDate(new Date())}.csv`,
       ['Bill no.', 'Date', 'Customer name', 'Customer phone', 'Items', 'Item details', 'Subtotal (INR)', 'Grand total (INR)'],
       filteredBills.map((b) => [
         formatBillNo(b.billNumber),
         b.date.toISOString(),
-        b.customerName,
-        b.customerPhone,
+        revealed ? b.customerName : maskName(b.customerName),
+        revealed ? b.customerPhone : maskPhone(b.customerPhone),
         b.items.length,
         b.items.map((i) => `${i.name} x${i.qty} @ ${paiseToRupees(i.unitPrice)}`).join('; '),
         paiseToRupees(b.subtotal),
@@ -120,7 +126,12 @@ function UserDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <ToolbarButton onClick={exportBills} icon="document">
+            {!revealed && (
+              <ToolbarButton onClick={() => setAsking(true)} icon="key">
+                Show customer details
+              </ToolbarButton>
+            )}
+            <ToolbarButton onClick={() => void exportBills()} icon="document">
               Export bills CSV
             </ToolbarButton>
             <BlockButton uid={shop.id} name={shop.name} blocked={blocked.has(shop.id)} />
@@ -173,10 +184,10 @@ function UserDetail() {
               </button>
             ))}
           </div>
-          {tab === 'bills' && <SearchInput value={q} onChange={setQ} placeholder="Search bill no., customer, item…" />}
+          {tab === 'bills' && <SearchInput value={q} onChange={setQ} placeholder={revealed ? 'Search bill no., customer, item…' : 'Search bill no., item…'} />}
         </div>
 
-        {tab === 'bills' && <BillsTable bills={filteredBills} />}
+        {tab === 'bills' && <BillsTable reveal={revealed} bills={filteredBills} />}
 
         {tab === 'customers' &&
           (customers.length === 0 ? (
@@ -197,8 +208,8 @@ function UserDetail() {
                   {customers.map((c) => (
                     <tr key={c.key}>
                       <td className="px-4 py-3">
-                        <span className="block font-medium text-ink">{c.name || 'Unnamed'}</span>
-                        <span className="block text-xs text-ink-soft">{formatPhone(c.phone) || c.phone || '—'}</span>
+                        <span className="block font-medium text-ink">{(revealed ? c.name : maskName(c.name)) || 'Unnamed'}</span>
+                        <span className="block text-xs text-ink-soft">{(revealed ? formatPhone(c.phone) || c.phone : maskPhone(c.phone)) || '—'}</span>
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums text-ink">{c.bills}</td>
                       <td className="w-40 px-4 py-3">
@@ -243,6 +254,7 @@ function UserDetail() {
             </div>
           ))}
       </Panel>
+      {asking && <RevealDialog shopId={id} count={shopBills.length} onClose={() => setAsking(false)} onRevealed={() => { setRevealed(true); setAsking(false); }} />}
     </div>
   );
 }
@@ -256,5 +268,40 @@ function Info({ label, value, hint, mono }: { label: string; value: string; hint
       </dd>
       {hint && <dd className="text-xs text-ink-faint">{hint}</dd>}
     </div>
+  );
+}
+
+/** Customer details stay masked until the admin records why they need them. */
+function RevealDialog({ shopId, count, onClose, onRevealed }: { shopId: string; count: number; onClose: () => void; onRevealed: () => void }) {
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const ok = reason.trim().length >= 10;
+
+  async function confirm() {
+    setBusy(true);
+    setError('');
+    try {
+      await logAdminAccess('reveal_customers', shopId, reason.trim(), count);
+      onRevealed();
+    } catch {
+      setError('Could not record this, so the details stay hidden.');
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal onClose={onClose} busy={busy} labelledBy="reveal-title">
+      <div className="p-6">
+        <h2 id="reveal-title" className="text-base font-semibold text-ink">Why do you need these customer details?</h2>
+        <p className="mt-2 text-sm text-ink-soft">Only reveal them for a specific support, security or legal reason. This is logged permanently.</p>
+        <textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} rows={3} disabled={busy} className="mt-4 w-full rounded-xl border border-border bg-canvas p-3 text-sm outline-none focus:border-primary" />
+        {error && <p role="alert" className="mt-2 text-sm text-error">{error}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" disabled={busy} onClick={onClose} className="h-10 rounded-xl border border-border px-4 text-sm font-medium hover:bg-ink/5">Cancel</button>
+          <button type="button" disabled={!ok || busy} onClick={() => void confirm()} className="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-white disabled:opacity-50">Show details</button>
+        </div>
+      </div>
+    </Modal>
   );
 }

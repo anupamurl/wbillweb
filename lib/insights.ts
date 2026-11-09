@@ -22,7 +22,7 @@ export function overviewOf(bills: Bill[]): Overview {
   };
 }
 
-function customerKey(b: Bill): string {
+export function customerKey(b: Bill): string {
   return b.customerPhone || `name:${b.customerName.trim().toLowerCase()}`;
 }
 

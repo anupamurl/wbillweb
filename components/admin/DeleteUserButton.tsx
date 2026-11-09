@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Icon from '@/components/Icon';
-import { deleteUserData } from '@/lib/admin/data';
+import { adminCloseAccount } from '@/lib/admin/data';
 
 /**
- * Permanently deletes a user's shop, bills, login history and block record.
- * The admin has to type the shop name to confirm.
+ * Closes a user's account: the login is blocked and the team removed at
+ * once, and the data is held for the legal minimum, then erased from the
+ * Retention page. The admin has to type the shop name to confirm.
  */
 export default function DeleteUserButton({
   uid,
@@ -40,7 +41,7 @@ export default function DeleteUserButton({
     setBusy(true);
     setError('');
     try {
-      await deleteUserData(uid);
+      await adminCloseAccount(uid, name);
       setOpen(false);
       onDeleted?.();
     } catch (e) {
@@ -66,8 +67,8 @@ export default function DeleteUserButton({
           setError('');
           setOpen(true);
         }}
-        aria-label={`Delete ${name}`}
-        title="Delete user permanently"
+        aria-label={`Close account for ${name}`}
+        title="Close account"
         className={
           compact
             ? 'inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-error/10 hover:text-error'
@@ -75,7 +76,7 @@ export default function DeleteUserButton({
         }
       >
         <TrashIcon className="h-4 w-4" />
-        {!compact && 'Delete user'}
+        {!compact && 'Close account'}
       </button>
 
       <dialog
@@ -98,8 +99,8 @@ export default function DeleteUserButton({
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-error/10 text-error">
             <TrashIcon className="h-5 w-5" />
           </span>
-          <h2 className="mt-4 text-lg font-semibold">Delete {name} permanently?</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">This removes everything for this user from the database. It can&rsquo;t be undone:</p>
+          <h2 className="mt-4 text-lg font-semibold">Close {name}&rsquo;s account?</h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">The owner is blocked and their team loses access at once. The law requires this data to be held for one year, so it moves to the Retention page and is erased from there:</p>
           <ul className="mt-2 list-disc pl-5 text-sm text-ink-soft">
             <li>Shop profile and settings</li>
             <li>
@@ -107,7 +108,7 @@ export default function DeleteUserButton({
             </li>
             <li>Login history and any block</li>
           </ul>
-          <p className="mt-2 text-sm text-ink-soft">If they&rsquo;re signed in, they&rsquo;ll be signed out and told their account was deleted.</p>
+          <p className="mt-2 text-sm text-ink-soft">If they&rsquo;re signed in, they&rsquo;ll be signed out.</p>
 
           <label htmlFor={`del-${uid}`} className="mt-5 block text-sm font-medium">
             Type <span className="rounded bg-ink/5 px-1 font-mono">{name}</span> to confirm
@@ -130,7 +131,7 @@ export default function DeleteUserButton({
               Cancel
             </button>
             <button type="submit" disabled={!matches || busy} className="h-10 rounded-xl bg-error px-4 text-sm font-semibold text-white hover:bg-error/90 disabled:opacity-50">
-              {busy ? 'Deleting…' : 'Delete permanently'}
+              {busy ? 'Closing…' : 'Close account'}
             </button>
           </div>
         </form>
